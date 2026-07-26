@@ -21,11 +21,11 @@
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none max-w-md mx-auto">
 
-  <!-- 頂部資訊與備份列 -->
+  <!-- 頂部標題與備份按鈕 -->
   <header class="w-full flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 mb-3">
     <div>
       <h1 class="text-lg font-bold text-slate-800 tracking-wide">每日簽到罐</h1>
-      <p id="user-status" class="text-xs text-slate-400 mt-0.5">自訂任務與簽到</p>
+      <p id="user-status" class="text-xs text-slate-400 mt-0.5">紀錄每天的小成就</p>
     </div>
     <div class="flex gap-2">
       <button onclick="exportData()" title="備份" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 text-xs font-medium px-2.5">
@@ -37,48 +37,44 @@
     </div>
   </header>
 
-  <!-- 中間主畫面區域：可切換 罐子視圖 / 任務管理視圖 -->
+  <!-- 主內容區塊：罐子與任務放在同一個頁面 -->
   <main class="w-full flex-1 flex flex-col gap-3 mb-3">
     
-    <!-- 標籤切換 -->
-    <div class="flex bg-slate-200 p-1 rounded-xl">
-      <button onclick="switchTab('jar')" id="tab-jar" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition-all">🪨 我的簽到罐</button>
-      <button onclick="switchTab('tasks')" id="tab-tasks" class="flex-1 py-2 text-sm font-bold rounded-lg text-slate-600 transition-all">📋 自訂任務清單</button>
-    </div>
-
-    <!-- 視圖 1：罐子檢視 -->
-    <div id="view-jar" class="flex flex-col items-center gap-3">
-      <div class="relative w-64 h-64 border-4 border-slate-700/80 rounded-b-3xl bg-white/60 backdrop-blur-md shadow-lg overflow-hidden flex flex-col justify-end p-3 my-2">
-        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-48 h-3 bg-slate-300 rounded-full border border-slate-400/50 z-20"></div>
+    <!-- 1. 簽到罐區塊 -->
+    <div class="flex flex-col items-center gap-2 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
+      <div class="relative w-56 h-56 border-4 border-slate-700/80 rounded-b-3xl bg-white/60 backdrop-blur-md shadow-inner overflow-hidden flex flex-col justify-end p-3">
+        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-3 bg-slate-300 rounded-full border border-slate-400/50 z-20"></div>
         <div id="jar-content" class="w-full h-full flex flex-wrap-reverse content-start justify-center gap-2 overflow-y-auto pt-4 no-scrollbar"></div>
       </div>
-      <div class="flex items-center justify-between w-full px-2 text-slate-600 font-medium bg-white p-3 rounded-xl border border-slate-200/80">
+      <div class="flex items-center justify-between w-full px-2 text-slate-600 font-medium text-sm">
         <span>已累積石頭：</span>
         <span class="text-xl font-black text-indigo-600" id="stone-count">0</span>
       </div>
     </div>
 
-    <!-- 視圖 2：自訂任務管理檢視 -->
-    <div id="view-tasks" class="hidden flex-col gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+    <!-- 2. 自訂任務清單區塊 -->
+    <div class="flex flex-col gap-2.5 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
       <div class="flex justify-between items-center">
-        <h2 class="font-bold text-slate-700 text-sm">新增與管理日常任務</h2>
-        <span class="text-xs text-slate-400">勾選代表今日完成</span>
+        <h2 class="font-bold text-slate-700 text-xs">📋 今日任務清單</h2>
+        <span class="text-[10px] text-slate-400">勾選代表今日完成</span>
       </div>
+      
       <!-- 新增自訂任務輸入框 -->
       <div class="flex gap-2">
-        <input type="text" id="new-task-name" placeholder="例如：雙手各拿一個壺鈴..." class="flex-1 px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white text-slate-800">
-        <button onclick="addNewCustomTask()" class="bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold active:scale-95 transition-all">新增</button>
+        <input type="text" id="new-task-name" placeholder="新增任務..." class="flex-1 px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-white text-slate-800">
+        <button onclick="addNewCustomTask()" class="bg-indigo-600 text-white px-3 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all">新增</button>
       </div>
+
       <!-- 任務清單列表 -->
-      <div id="custom-task-list" class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
+      <div id="custom-task-list" class="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
         <!-- 動態產生 -->
       </div>
     </div>
 
   </main>
 
-  <!-- 底部簽到按鈕區塊 -->
-  <footer class="w-full flex flex-col gap-2">
+  <!-- 底部簽到提交按鈕 -->
+  <footer class="w-full">
     <button id="checkin-btn" onclick="doCheckIn()" class="w-full py-3.5 bg-indigo-600 active:bg-indigo-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2">
       <span>🪨 提交今日任務並丟入石頭</span>
     </button>
@@ -92,8 +88,7 @@
       stones: [], 
       customTasks: [
         { id: 1, name: "雙手各拿一個壺鈴", done: false },
-        { id: 2, name: "閱讀 30 分鐘", done: false },
-        { id: 3, name: "喝水 2000cc", done: false }
+        { id: 2, name: "閱讀 30 分鐘", done: false }
       ] 
     };
 
@@ -111,25 +106,6 @@
       renderStones();
       renderCustomTasks();
       checkTodayStatus();
-    }
-
-    function switchTab(tab) {
-      const jarView = document.getElementById('view-jar');
-      const tasksView = document.getElementById('view-tasks');
-      const tabJar = document.getElementById('tab-jar');
-      const tabTasks = document.getElementById('tab-tasks');
-
-      if (tab === 'jar') {
-        jarView.classList.remove('hidden');
-        tasksView.classList.add('hidden');
-        tabJar.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition-all";
-        tabTasks.className = "flex-1 py-2 text-sm font-bold rounded-lg text-slate-600 transition-all";
-      } else {
-        jarView.classList.add('hidden');
-        tasksView.classList.remove('hidden');
-        tabTasks.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition-all";
-        tabJar.className = "flex-1 py-2 text-sm font-bold rounded-lg text-slate-600 transition-all";
-      }
     }
 
     function addNewCustomTask() {
@@ -163,20 +139,20 @@
       container.innerHTML = '';
 
       if (state.customTasks.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">目前沒有自訂任務，請在上方新增一個！</p>';
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">目前無任務，在上方新增一個吧！</p>';
         return;
       }
 
       state.customTasks.forEach(task => {
         const item = document.createElement('div');
-        item.className = `flex items-center justify-between p-2.5 rounded-xl border transition-all ${task.done ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
+        item.className = `flex items-center justify-between p-2 rounded-xl border transition-all ${task.done ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
         
         item.innerHTML = `
-          <label class="flex items-center gap-2.5 flex-1 cursor-pointer">
+          <label class="flex items-center gap-2 flex-1 cursor-pointer">
             <input type="checkbox" ${task.done ? 'checked' : ''} onclick="toggleTaskDone(${task.id})" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
-            <span class="text-sm font-medium ${task.done ? 'line-through opacity-75' : ''}">${task.name}</span>
+            <span class="text-xs font-medium ${task.done ? 'line-through opacity-75' : ''}">${task.name}</span>
           </label>
-          <button onclick="deleteCustomTask(${task.id})" class="text-slate-400 hover:text-red-500 px-2 py-1 text-xs">🗑️</button>
+          <button onclick="deleteCustomTask(${task.id})" class="text-slate-400 hover:text-red-500 px-1.5 py-0.5 text-xs">🗑️</button>
         `;
         container.appendChild(item);
       });
@@ -208,7 +184,6 @@
       state.stones.push({ color: randomColor, shape: randomShape, task: taskSummary });
 
       saveData();
-      switchTab('jar');
       renderStones(true);
       checkTodayStatus();
     }
@@ -224,7 +199,7 @@
         if (stone.shape === 1) shapeClass = 'rounded-lg transform rotate-12';
         if (stone.shape === 2) shapeClass = 'rounded-2xl transform -rotate-6';
 
-        el.className = `w-10 h-10 ${shapeClass} shadow-md border border-black/10 flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
+        el.className = `w-9 h-9 ${shapeClass} shadow-md border border-black/10 flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
         el.style.backgroundColor = stone.color;
 
         el.onclick = () => {
