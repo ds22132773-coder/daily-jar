@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>每日簽到罐</title>
-  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIu^{-}$9oeeI签到罐",      "short_name": "簽到罐",      "start_url": ".",      "display": "standalone",      "background_color": "#f8fafc",      "theme_color": "#4f46e5"    }">
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuaWueWPo+eUn+iXhuW3rCIsCiAgInNob3J0X25hbWUiOiAi5Lnv5oee5qGIIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICI0ZjQ2ZTUiCn0=">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     @keyframes dropIn {
       0% { transform: translateY(-180px) scale(0.6) rotate(-10deg); opacity: 0; }
@@ -14,31 +14,29 @@
       100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
     }
     .animate-drop { animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    .jar-mask { clip-path: polygon(10% 0%, 90% 0%, 100% 15%, 100% 100%, 0% 100%, 0% 15%); }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none">
 
-  <!-- 頂部資訊欄 -->
+  <!-- 頂部資訊與功能列 -->
   <header class="w-full max-w-sm flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
     <div>
       <h1 class="text-xl font-bold text-slate-800 tracking-wide">每日簽到罐</h1>
-      <p id="user-status" class="text-xs text-slate-400 mt-0.5">未登入 (資料儲存於此裝置)</p>
+      <p id="user-status" class="text-xs text-slate-400 mt-0.5">本地儲存模式</p>
     </div>
-    <div id="g_id_onload"
-         data-client_id="652129979830-9jpono39nalk4oiac20d707ga2p7n8s1.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
-    </div>
-    <div id="login-btn-container" class="g_id_signin" data-type="icon" data-shape="circle" data-theme="outline"></div>
-    <div id="user-avatar" class="hidden w-10 h-10 rounded-full border-2 border-indigo-500 overflow-hidden shadow-sm">
-      <img id="avatar-img" src="" alt="User" class="w-full h-full object-cover">
+    <div class="flex gap-2">
+      <button onclick="exportData()" title="備份至雲端/檔案" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 text-sm flex items-center gap-1 font-medium px-3">
+        📤 備份
+      </button>
+      <label title="還原備份" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 text-sm flex items-center gap-1 font-medium px-3 cursor-pointer">
+        📥 還原 <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+      </label>
     </div>
   </header>
 
-  <!-- 罐子主體區塊 -->
-  <main class="relative w-full max-w-sm h-80 my-auto flex items-end justify-center">
-    <div class="relative w-64 h-72 border-4 border-slate-700/80 rounded-b-3xl bg-white/40 backdrop-blur-md shadow-lg overflow-hidden flex flex-col justify-end p-3">
+  <!-- 罐子主體區塊 (用於截圖的容器) -->
+  <main id="capture-area" class="relative w-full max-w-sm h-80 my-auto flex items-end justify-center bg-slate-100 p-2 rounded-3xl">
+    <div class="relative w-64 h-72 border-4 border-slate-700/80 rounded-b-3xl bg-white/60 backdrop-blur-md shadow-lg overflow-hidden flex flex-col justify-end p-3">
       <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-48 h-3 bg-slate-300 rounded-full border border-slate-400/50 z-20"></div>
       <div id="jar-content" class="w-full h-full flex flex-wrap-reverse content-start justify-center gap-2 overflow-y-auto pt-4 no-scrollbar"></div>
     </div>
@@ -53,12 +51,14 @@
     <button id="checkin-btn" onclick="addStone()" class="w-full py-4 bg-indigo-600 active:bg-indigo-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2">
       <span>🪨 丟入今日石頭</span>
     </button>
+    <button onclick="takeJarScreenshot()" class="w-full py-2.5 bg-white border border-slate-300 active:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+      <span>📸 截圖儲存罐子</span>
+    </button>
   </footer>
 
   <script>
     const COLORS = ['#f87171', '#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
     let state = { count: 0, lastDate: "", stones: [] };
-    let currentUser = null;
 
     function init() {
       const saved = localStorage.getItem('daily_jar_data');
@@ -121,23 +121,43 @@
       localStorage.setItem('daily_jar_data', JSON.stringify(state));
     }
 
-    function parseJwt(token) {
-      var base64Url = token.split('.')[1];
-      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
+    // 截圖功能
+    function takeJarScreenshot() {
+      const element = document.getElementById('capture-area');
+      html2canvas(element, { backgroundColor: '#f8fafc' }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `我的簽到罐_${new Date().toISOString().slice(0,10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
     }
 
-    function handleCredentialResponse(response) {
-      const data = parseJwt(response.credential);
-      currentUser = data;
-      document.getElementById('user-status').innerText = `已同步：${data.name}`;
-      document.getElementById('login-btn-container').classList.add('hidden');
-      const avatarContainer = document.getElementById('user-avatar');
-      document.getElementById('avatar-img').src = data.picture;
-      avatarContainer.classList.remove('hidden');
+    // 備份到檔案/雲端硬碟
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute("href", dataStr);
+      dlAnchorElem.setAttribute("download", `daily_jar_backup_${new Date().toISOString().slice(0,10)}.json`);
+      dlAnchorElem.click();
+    }
+
+    // 還原備份
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          state = JSON.parse(e.target.result);
+          saveData();
+          renderStones();
+          checkTodayStatus();
+          alert('資料還原成功！');
+        } catch (err) {
+          alert('檔案格式錯誤！');
+        }
+      };
+      reader.readAsText(file);
     }
 
     window.onload = init;
