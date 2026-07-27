@@ -8,6 +8,11 @@
   <meta http-equiv="Expires" content="0">
   
   <title>每日簽到罐</title>
+  
+  <!-- 網頁與手機桌面 App 圖示設定 -->
+  <link rel="icon" href="./icon.png">
+  <link rel="apple-touch-icon" href="./icon.png">
+  
   <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuaWueWPo+eUn+iXhuW3rCIsCiAgInNob3J0X25hbWUiOiAi5Lnv5oee5qGIIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICI0ZjQ2ZTUiCn0=">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -17,6 +22,19 @@
       100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
     }
     .animate-drop { animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    
+    /* 星形石頭樣式與彩虹漸變動畫 */
+    .star-stone {
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      background: linear-gradient(45deg, #ff007f, #ff7f00, #ffee00, #00ff7f, #00bfff, #8b00ff);
+      background-size: 300% 300%;
+      animation: rainbowGlow 3s ease infinite;
+    }
+    @keyframes rainbowGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none max-w-md mx-auto">
@@ -37,7 +55,7 @@
     </div>
   </header>
 
-  <!-- 主內容區塊：罐子與任務放在同一個頁面 -->
+  <!-- 主內容區塊：罐子與任務 -->
   <main class="w-full flex-1 flex flex-col gap-3 mb-3">
     
     <!-- 1. 簽到罐區塊 -->
@@ -66,8 +84,14 @@
       </div>
 
       <!-- 任務清單列表 -->
-      <div id="custom-task-list" class="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
+      <div id="custom-task-list" class="flex flex-col gap-1.5 max-h-32 overflow-y-auto pr-1">
         <!-- 動態產生 -->
+      </div>
+
+      <!-- 3. 今日筆記/心得記錄框 -->
+      <div class="pt-2 border-t border-slate-100 flex flex-col gap-1">
+        <label for="daily-note" class="text-[11px] font-bold text-slate-600">✍️ 今日筆記／想記錄的事（選填）：</label>
+        <input type="text" id="daily-note" placeholder="例如：今天心情很棒、體重破紀錄..." class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50 text-slate-800">
       </div>
     </div>
 
@@ -81,7 +105,8 @@
   </footer>
 
   <script>
-    const COLORS = ['#f87171', '#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
+    const COLORS = ['#ffffff', '#cbd5e1', '#64748b', '#f87171', '#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
+    
     let state = { 
       count: 0, 
       lastDate: "", 
@@ -161,11 +186,14 @@
     function checkTodayStatus() {
       const today = new Date().toLocaleDateString();
       const btn = document.getElementById('checkin-btn');
+      const noteInput = document.getElementById('daily-note');
+      
       if (state.lastDate === today) {
         btn.disabled = true;
         btn.classList.replace('bg-indigo-600', 'bg-slate-300');
         btn.classList.remove('shadow-indigo-200', 'active:scale-95');
         btn.innerHTML = '<span>✅ 今日已完成簽到與丟石頭</span>';
+        if (noteInput) noteInput.disabled = true;
       }
     }
 
@@ -173,19 +201,39 @@
       const today = new Date().toLocaleDateString();
       if (state.lastDate === today) return;
 
-      const completedTasks = state.customTasks.filter(t => t.done).map(t => t.name);
-      const taskSummary = completedTasks.length > 0 ? completedTasks.join(', ') : "完成每日日常";
+      const noteInput = document.getElementById('daily-note');
+      const userNote = noteInput ? noteInput.value.trim() : "";
 
-      const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-      const randomShape = Math.floor(Math.random() * 3); 
+      // 觸發 3.3% 隱藏稀有彩虹星形石頭
+      const isRareStar = Math.random() < 0.033; 
+
+      let randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+      let randomShape = Math.floor(Math.random() * 5); 
       
+      if (isRareStar) {
+        randomShape = 99; 
+      }
+
       state.count += 1;
       state.lastDate = today;
-      state.stones.push({ color: randomColor, shape: randomShape, task: taskSummary });
+      // 記錄日期與當下紀錄的文字 (note)
+      state.stones.push({ 
+        date: today, 
+        note: userNote,
+        color: randomColor, 
+        shape: randomShape, 
+        isRare: isRareStar 
+      });
 
       saveData();
       renderStones(true);
       checkTodayStatus();
+
+      if (isRareStar) {
+        setTimeout(() => {
+          alert('🎉 恭喜你！今天幸運獲得了【超稀有彩虹星形石頭】⭐！');
+        }, 600);
+      }
     }
 
     function renderStones(animateLast = false) {
@@ -195,15 +243,27 @@
 
       state.stones.forEach((stone, index) => {
         const el = document.createElement('div');
-        let shapeClass = 'rounded-full';
-        if (stone.shape === 1) shapeClass = 'rounded-lg transform rotate-12';
-        if (stone.shape === 2) shapeClass = 'rounded-2xl transform -rotate-6';
+        
+        if (stone.shape === 99 || stone.isRare) {
+          el.className = `w-9 h-9 star-stone shadow-lg flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
+        } else {
+          let shapeClass = 'rounded-full';
+          if (stone.shape === 1) shapeClass = 'rounded-lg transform rotate-12';
+          if (stone.shape === 2) shapeClass = 'rounded-2xl transform -rotate-6';
+          if (stone.shape === 3) shapeClass = 'rounded-tl-2xl rounded-br-2xl transform rotate-45';
+          if (stone.shape === 4) shapeClass = 'rounded-tr-2xl rounded-bl-2xl transform -rotate-12';
 
-        el.className = `w-9 h-9 ${shapeClass} shadow-md border border-black/10 flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
-        el.style.backgroundColor = stone.color;
+          el.className = `w-9 h-9 ${shapeClass} shadow-md border border-black/10 flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
+          el.style.backgroundColor = stone.color;
+        }
 
+        // 點擊石頭僅顯示日期與當時紀錄的文字
         el.onclick = () => {
-          if (stone.task) alert(`🪨 這顆石頭紀錄的任務：\n「${stone.task}」`);
+          const rareHeader = stone.isRare ? '⭐【超稀有彩虹星】\n' : '';
+          const stoneDate = stone.date || '早期紀錄';
+          const noteText = stone.note ? `\n📝 紀錄文字：${stone.note}` : '\n📝 紀錄文字：無';
+          
+          alert(`${rareHeader}🗓️ 簽到日期：${stoneDate}${noteText}`);
         };
 
         if (animateLast && index === state.stones.length - 1) {
