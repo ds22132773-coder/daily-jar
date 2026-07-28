@@ -74,7 +74,7 @@
     <div class="flex flex-col gap-2.5 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
       <div class="flex justify-between items-center">
         <h2 class="font-bold text-slate-700 text-xs">📋 今日任務清單</h2>
-        <span class="text-[10px] text-slate-400">勾選代表今日完成</span>
+        <span class="text-[10px] text-slate-400">需完成全部任務才能簽到</span>
       </div>
       
       <!-- 新增自訂任務輸入框 -->
@@ -201,6 +201,13 @@
       const today = new Date().toLocaleDateString();
       if (state.lastDate === today) return;
 
+      // 嚴格檢查：必須所有任務都完成才能簽到
+      const hasUnfinishedTask = state.customTasks.some(t => !t.done);
+      if (state.customTasks.length > 0 && hasUnfinishedTask) {
+        alert('⚠️ 請先完成並勾選今日的所有任務，才能丟入石頭喔！');
+        return;
+      }
+
       const noteInput = document.getElementById('daily-note');
       const userNote = noteInput ? noteInput.value.trim() : "";
 
@@ -216,7 +223,6 @@
 
       state.count += 1;
       state.lastDate = today;
-      // 記錄日期與當下紀錄的文字 (note)
       state.stones.push({ 
         date: today, 
         note: userNote,
@@ -257,7 +263,6 @@
           el.style.backgroundColor = stone.color;
         }
 
-        // 點擊石頭僅顯示日期與當時紀錄的文字
         el.onclick = () => {
           const rareHeader = stone.isRare ? '⭐【超稀有彩虹星】\n' : '';
           const stoneDate = stone.date || '早期紀錄';
