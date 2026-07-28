@@ -37,7 +37,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none max-w-md mx-auto">
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none max-w-md mx-auto relative">
 
   <!-- 頂部標題與備份按鈕 -->
   <header class="w-full flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 mb-3">
@@ -104,6 +104,17 @@
     </button>
   </footer>
 
+  <!-- 自訂美化彈跳視窗 (取代原生 alert) -->
+  <div id="custom-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transform transition-all scale-100">
+      <h3 id="modal-title" class="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">系統提示</h3>
+      <div id="modal-content" class="text-sm text-slate-600 whitespace-pre-line leading-relaxed"></div>
+      <button onclick="closeModal()" class="w-full mt-2 py-2.5 bg-indigo-600 active:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all active:scale-95">
+        確定
+      </button>
+    </div>
+  </div>
+
   <script>
     const COLORS = ['#ffffff', '#cbd5e1', '#64748b', '#f87171', '#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
     
@@ -116,6 +127,16 @@
         { id: 2, name: "閱讀 30 分鐘", done: false }
       ] 
     };
+
+    function showCustomModal(title, content) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-content').innerText = content;
+      document.getElementById('custom-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('custom-modal').classList.add('hidden');
+    }
 
     function init() {
       const saved = localStorage.getItem('daily_jar_data_v2');
@@ -201,17 +222,15 @@
       const today = new Date().toLocaleDateString();
       if (state.lastDate === today) return;
 
-      // 嚴格檢查：必須所有任務都完成才能簽到
       const hasUnfinishedTask = state.customTasks.some(t => !t.done);
       if (state.customTasks.length > 0 && hasUnfinishedTask) {
-        alert('⚠️ 請先完成並勾選今日的所有任務，才能丟入石頭喔！');
+        showCustomModal('系統提示', '⚠️ 請先完成並勾選今日的所有任務，才能丟入石頭喔！');
         return;
       }
 
       const noteInput = document.getElementById('daily-note');
       const userNote = noteInput ? noteInput.value.trim() : "";
 
-      // 觸發 3.3% 隱藏稀有彩虹星形石頭
       const isRareStar = Math.random() < 0.033; 
 
       let randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -237,7 +256,7 @@
 
       if (isRareStar) {
         setTimeout(() => {
-          alert('🎉 恭喜你！今天幸運獲得了【超稀有彩虹星形石頭】⭐！');
+          showCustomModal('系統提示', '🎉 恭喜你！今天幸運獲得了【超稀有彩虹星形石頭】⭐！');
         }, 600);
       }
     }
@@ -264,11 +283,11 @@
         }
 
         el.onclick = () => {
-          const rareHeader = stone.isRare ? '⭐【超稀有彩虹星】\n' : '';
+          const rareHeader = stone.isRare ? '⭐【超稀有彩虹星】\n\n' : '';
           const stoneDate = stone.date || '早期紀錄';
           const noteText = stone.note ? `\n📝 紀錄文字：${stone.note}` : '\n📝 紀錄文字：無';
           
-          alert(`${rareHeader}🗓️ 簽到日期：${stoneDate}${noteText}`);
+          showCustomModal('系統提示', `${rareHeader}🗓️ 簽到日期：${stoneDate}${noteText}`);
         };
 
         if (animateLast && index === state.stones.length - 1) {
@@ -301,9 +320,9 @@
           renderStones();
           renderCustomTasks();
           checkTodayStatus();
-          alert('資料還原成功！');
+          showCustomModal('系統提示', '資料還原成功！');
         } catch (err) {
-          alert('檔案格式錯誤！');
+          showCustomModal('系統提示', '檔案格式錯誤！');
         }
       };
       reader.readAsText(file);
