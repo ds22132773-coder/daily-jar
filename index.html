@@ -62,7 +62,7 @@
     <div class="flex flex-col items-center gap-2 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
       <div class="relative w-56 h-56 border-4 border-slate-700/80 rounded-b-3xl bg-white/60 backdrop-blur-md shadow-inner overflow-hidden flex flex-col justify-end p-3">
         <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-3 bg-slate-300 rounded-full border border-slate-400/50 z-20"></div>
-        <div id="jar-content" class="w-full h-full flex flex-wrap-reverse content-start justify-center gap-2 overflow-y-auto pt-4 no-scrollbar"></div>
+        <div id="jar-content" class="w-full h-full flex flex-wrap-reverse content-start justify-center gap-1.5 overflow-y-auto pt-4 no-scrollbar"></div>
       </div>
       <div class="flex items-center justify-between w-full px-2 text-slate-600 font-medium text-sm">
         <span>已累積石頭：</span>
@@ -104,7 +104,7 @@
     </button>
   </footer>
 
-  <!-- 自訂美化彈跳視窗 (取代原生 alert) -->
+  <!-- 自訂美化彈跳視窗 -->
   <div id="custom-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transform transition-all scale-100">
       <h3 id="modal-title" class="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">系統提示</h3>
@@ -236,6 +236,10 @@
       let randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
       let randomShape = Math.floor(Math.random() * 5); 
       
+      // 生成自然的隨機偏移量與旋轉角度
+      let randomRotate = Math.floor(Math.random() * 30) - 15; // -15度 到 +15度
+      let randomMarginX = Math.floor(Math.random() * 6) - 3;  // -3px 到 +3px
+      
       if (isRareStar) {
         randomShape = 99; 
       }
@@ -247,6 +251,8 @@
         note: userNote,
         color: randomColor, 
         shape: randomShape, 
+        rotate: randomRotate,
+        marginX: randomMarginX,
         isRare: isRareStar 
       });
 
@@ -269,18 +275,27 @@
       state.stones.forEach((stone, index) => {
         const el = document.createElement('div');
         
+        // 抓取舊資料或設定新隨機值
+        const rotateDeg = stone.rotate !== undefined ? stone.rotate : (Math.floor(Math.random() * 30) - 15);
+        const marginX = stone.marginX !== undefined ? stone.marginX : (Math.floor(Math.random() * 6) - 3);
+
         if (stone.shape === 99 || stone.isRare) {
           el.className = `w-9 h-9 star-stone shadow-lg flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
         } else {
           let shapeClass = 'rounded-full';
-          if (stone.shape === 1) shapeClass = 'rounded-lg transform rotate-12';
-          if (stone.shape === 2) shapeClass = 'rounded-2xl transform -rotate-6';
-          if (stone.shape === 3) shapeClass = 'rounded-tl-2xl rounded-br-2xl transform rotate-45';
-          if (stone.shape === 4) shapeClass = 'rounded-tr-2xl rounded-bl-2xl transform -rotate-12';
+          if (stone.shape === 1) shapeClass = 'rounded-lg';
+          if (stone.shape === 2) shapeClass = 'rounded-2xl';
+          if (stone.shape === 3) shapeClass = 'rounded-tl-2xl rounded-br-2xl';
+          if (stone.shape === 4) shapeClass = 'rounded-tr-2xl rounded-bl-2xl';
 
           el.className = `w-9 h-9 ${shapeClass} shadow-md border border-black/10 flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
           el.style.backgroundColor = stone.color;
         }
+
+        // 套用隨機傾斜與左右微移，讓堆疊看起來極度自然
+        el.style.transform = `rotate(${rotateDeg}deg)`;
+        el.style.marginLeft = `${marginX}px`;
+        el.style.marginRight = `${marginX}px`;
 
         el.onclick = () => {
           const rareHeader = stone.isRare ? '⭐【超稀有彩虹星】\n\n' : '';
