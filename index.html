@@ -34,6 +34,13 @@
 .stone-shape-5 { border-radius: 40% 60% 60% 40% / 55% 45% 55% 45%; } /* 溫潤豆莢石 */
 .stone-shape-6 { border-radius: 50% 40% 55% 45% / 45% 55% 40% 60%; } /* 雲朵澎澎石 */
 .stone-shape-7 { border-radius: 50%; }                               /* 完美圓潤珠寶石 */
+
+/* 柔和圓潤的星形剪影（使用 polygon 搭配平滑視覺感） */
+.stone-shape-star {
+  clip-path: polygon(50% 0%, 63% 35%, 100% 38%, 71% 62%, 82% 100%, 50% 78%, 18% 100%, 29% 62%, 0% 38%, 37% 35%);
+  border-radius: 25% !important;
+}
+
 /* 3% 稀有彩虹流光效果 */
 .rainbow-glow {
 background: linear-gradient(45deg, #ff007f, #ff7f00, #ffee00, #00ff7f, #00bfff, #8b00ff);
@@ -181,7 +188,7 @@ const STONEDB = [
 { id: 'festival_db', name: '翡翠粽香石', color: '#15803d', type: 'festival', cond: '端午節 簽到限定獲得', desc: '呈現深邃翡翠綠的端午限定石，帶有如同粽葉般的盎然生機。' },
 { id: 'festival_ma', name: '金桂月餅石', color: '#d97706', type: 'festival', cond: '中秋節 簽到限定獲得', desc: '如秋月般溫潤黃澄的限定石頭，象徵團圓與收穫的豐碩。' },
 { id: 'festival_xmas', name: '雪花冰晶石', color: '#38bdf8', type: 'festival', cond: '聖誕節 (12/25) 簽到限定獲得', desc: '宛如凝結冬雪純淨結晶的冰藍色石頭，充滿溫馨與奇幻氣息。' },
-{ id: 'rainbow_star', name: '超稀有彩虹星', color: 'rainbow', type: 'rare', cond: '每日簽到有 3% 機率隨機掉落', desc: '極為罕見的有機彩虹寶石，能折射出七彩的光芒，代表無與倫比的幸運！' }
+{ id: 'rainbow_star', name: '超稀有彩虹流光星', color: 'rainbow', type: 'rare', cond: '每日簽到有 3% 機率隨機掉落', desc: '極為罕見的有機彩虹流光星，折射出溫潤柔和的七彩寶石光芒，代表無與倫比的幸運！' }
 ];
 const JARS = [
 { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', unlocked: true, type: 'default' },
@@ -238,7 +245,6 @@ stone.stoneId = initialIds[idx % initialIds.length];
 if (!state.collectedStones.includes(stone.stoneId)) {
 state.collectedStones.push(stone.stoneId);
 }
-// 確保每顆舊石頭都有隨機形狀代號 (1~7)
 if (!stone.shapeIndex) {
 stone.shapeIndex = (idx % 7) + 1;
 }
@@ -318,7 +324,6 @@ state.collectedStones.push(pickedStoneDef.id);
 }
 let randomRotate = Math.floor(Math.random() * 30) - 15;
 let randomMarginX = Math.floor(Math.random() * 6) - 3;
-// 類型與形狀完全獨立隨機：隨機抽取 1 ~ 7 種光滑有機形狀
 let randomShapeIndex = Math.floor(Math.random() * 7) + 1;
 state.count += 1;
 state.lastDate = today;
@@ -336,7 +341,7 @@ saveData();
 renderStones(true);
 checkTodayStatus();
 if (pickedStoneDef.id === 'rainbow_star') {
-setTimeout(() => showSystemModal('🎉 恭喜你！幸運獲得了【超稀有彩虹星形石頭】⭐！'), 600);
+setTimeout(() => showSystemModal('🎉 恭喜你！幸運獲得了【超稀有彩虹流光星】⭐！'), 600);
 } else if (pickedStoneDef.type === 'festival') {
 setTimeout(() => showSystemModal(`🎉 恭喜獲得節日限定石頭：【${pickedStoneDef.name}】！`), 600);
 }
@@ -386,7 +391,7 @@ let stDef = STONEDB.find(s => s.id === stone.stoneId);
 if (!stDef) stDef = STONEDB[0];
 const el = document.createElement('div');
 const shapeIdx = stone.shapeIndex || 1;
-const shapeClass = `stone-shape-${shapeIdx}`;
+const shapeClass = (stone.stoneId === 'rainbow_star') ? 'stone-shape-star' : `stone-shape-${shapeIdx}`;
 if (stDef.color === 'rainbow') {
 el.className = `stone-item w-8 h-8 ${shapeClass} rainbow-glow shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
 } else {
@@ -422,9 +427,10 @@ const count = counts[st.id] || 0;
 const card = document.createElement('div');
 card.className = "p-3 rounded-xl border flex gap-3 items-center bg-white border-slate-200";
 let iconStyle = '';
-if (st.color === 'rainbow') iconStyle = 'background: linear-gradient(45deg, #ff007f, #ffee00, #00bfff);';
+let wikiShapeClass = (st.id === 'rainbow_star') ? 'stone-shape-star rainbow-glow' : 'stone-shape-1';
+if (st.color === 'rainbow') iconStyle = '';
 else iconStyle = `background-color: ${st.color}; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2);`;
-card.innerHTML = `<div class="w-10 h-10 stone-shape-1 flex-shrink-0 shadow-sm" style="${iconStyle}"></div> <div class="flex-1"> <div class="flex justify-between items-center"> <h4 class="font-bold text-xs text-slate-800"> ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆) </h4> </div> <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p> </div>`;
+card.innerHTML = `<div class="w-10 h-10 ${wikiShapeClass} flex-shrink-0 shadow-sm" style="${iconStyle}"></div> <div class="flex-1"> <div class="flex justify-between items-center"> <h4 class="font-bold text-xs text-slate-800"> ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆) </h4> </div> <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p> </div>`;
 container.appendChild(card);
 });
 }
@@ -555,8 +561,9 @@ const file = event.target.files[0];
 if (!file) return;
 const reader = new FileReader();
 reader.onload = function(e) {
+joinData = e.target.result;
 try {
-state = JSON.parse(e.target.result);
+state = JSON.parse(joinData);
 saveData(); init(); showSystemModal('資料還原成功！');
 } catch (err) { showSystemModal('檔案格式錯誤！'); }
 };
