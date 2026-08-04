@@ -10,7 +10,7 @@
 <link rel="icon" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
 <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuaWueWPo+eUn+iXhuW3rCIsCiAgInNob3J0X25hbWUiOiAi5Lnv5oee5qGIIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmCeLCKICAidGhlbWVfY29sb3IiOiAiNGE0NmU1Igp9">
-<script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
 @keyframes dropIn {
 0% { transform: translateY(-180px) scale(0.6) rotate(-10deg); opacity: 0; }
@@ -26,14 +26,14 @@
 100% { transform: rotate(0deg) translateX(0); }
 }
 .shake-jar { animation: shakeJiggle 0.5s ease-in-out; }
-/* 6 種以上極致光滑、有機圓潤的隨機石頭形狀（類型與形狀完全獨立） /
-.stone-shape-1 { border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%; } / 經典水滴卵石 /
-.stone-shape-2 { border-radius: 35% 65% 55% 45% / 50% 40% 60% 50%; } / 不規則有機軟石 /
-.stone-shape-3 { border-radius: 60% / 40%; }                          / 扁平水漂石 /
-.stone-shape-4 { border-radius: 45% 55% 48% 52% / 52% 45% 55% 48%; } / 飽滿圓心石 /
-.stone-shape-5 { border-radius: 40% 60% 60% 40% / 55% 45% 55% 45%; } / 溫潤豆莢石 /
-.stone-shape-6 { border-radius: 50% 40% 55% 45% / 45% 55% 40% 60%; } / 雲朵澎澎石 /
-.stone-shape-7 { border-radius: 50%; }                               / 完美圓潤珠寶石 */
+/* 6 種以上極致光滑、有機圓潤的隨機石頭形狀（類型與形狀完全獨立） */
+.stone-shape-1 { border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%; } /* 經典水滴卵石 */
+.stone-shape-2 { border-radius: 35% 65% 55% 45% / 50% 40% 60% 50%; } /* 不規則有機軟石 */
+.stone-shape-3 { border-radius: 60% / 40%; }                          /* 扁平水漂石 */
+.stone-shape-4 { border-radius: 45% 55% 48% 52% / 52% 45% 55% 48%; } /* 飽滿圓心石 */
+.stone-shape-5 { border-radius: 40% 60% 60% 40% / 55% 45% 55% 45%; } /* 溫潤豆莢石 */
+.stone-shape-6 { border-radius: 50% 40% 55% 45% / 45% 55% 40% 60%; } /* 雲朵澎澎石 */
+.stone-shape-7 { border-radius: 50%; }                               /* 完美圓潤珠寶石 */
 /* 3% 稀有彩虹流光效果 */
 .rainbow-glow {
 background: linear-gradient(45deg, #ff007f, #ff7f00, #ffee00, #00ff7f, #00bfff, #8b00ff);
@@ -285,7 +285,7 @@ JARS.forEach(j => jar.classList.remove(j.class));
 const target = JARS.find(j => j.id === jarId) || JARS[0];
 jar.classList.add(target.class);
 state.currentJar = jarId;
-document.getElementById('current-jar-name').innerText = 當前主題：${target.name};
+document.getElementById('current-jar-name').innerText = `當前主題：${target.name}`;
 saveData();
 }
 function doCheckIn() {
@@ -338,7 +338,7 @@ checkTodayStatus();
 if (pickedStoneDef.id === 'rainbow_star') {
 setTimeout(() => showSystemModal('🎉 恭喜你！幸運獲得了【超稀有彩虹星形石頭】⭐！'), 600);
 } else if (pickedStoneDef.type === 'festival') {
-setTimeout(() => showSystemModal(🎉 恭喜獲得節日限定石頭：【${pickedStoneDef.name}】！), 600);
+setTimeout(() => showSystemModal(`🎉 恭喜獲得節日限定石頭：【${pickedStoneDef.name}】！`), 600);
 }
 }
 function checkAchievements(hour, silent = false) {
@@ -372,8 +372,8 @@ if (notesCount >= 30) { unlockJar('aNotes', 'tea'); }
 saveData();
 if (!silent && (newlyUnlockedJars.length > 0 || newlyUnlockedStones.length > 0)) {
 let msg = '🎉 恭喜解鎖新內容！\n';
-if (newlyUnlockedJars.length > 0) msg += \n解鎖主題瓶：${newlyUnlockedJars.join('、')};
-if (newlyUnlockedStones.length > 0) msg += \n解鎖新石頭：${newlyUnlockedStones.join('、')};
+if (newlyUnlockedJars.length > 0) msg += `\n解鎖主題瓶：${newlyUnlockedJars.join('、')}`;
+if (newlyUnlockedStones.length > 0) msg += `\n解鎖新石頭：${newlyUnlockedStones.join('、')}`;
 setTimeout(() => showSystemModal(msg), 800);
 }
 }
@@ -386,20 +386,20 @@ let stDef = STONEDB.find(s => s.id === stone.stoneId);
 if (!stDef) stDef = STONEDB[0];
 const el = document.createElement('div');
 const shapeIdx = stone.shapeIndex || 1;
-const shapeClass = stone-shape-${shapeIdx};
+const shapeClass = `stone-shape-${shapeIdx}`;
 if (stDef.color === 'rainbow') {
-el.className = stone-item w-8 h-8 ${shapeClass} rainbow-glow shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10;
+el.className = `stone-item w-8 h-8 ${shapeClass} rainbow-glow shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
 } else {
-el.className = stone-item w-8 h-8 ${shapeClass} shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-110;
+el.className = `stone-item w-8 h-8 ${shapeClass} shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
 el.style.backgroundColor = stDef.color;
 el.style.boxShadow = 'inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)';
 }
-el.style.transform = rotate(${stone.rotate || 0}deg);
-el.style.marginLeft = ${stone.marginX || 0}px;
-el.style.marginRight = ${stone.marginX || 0}px;
+el.style.transform = `rotate(${stone.rotate || 0}deg)`;
+el.style.marginLeft = `${stone.marginX || 0}px`;
+el.style.marginRight = `${stone.marginX || 0}px`;
 el.onclick = () => {
-const noteText = stone.note ? \n📝 紀錄：${stone.note} : '\n📝 紀錄：無';
-showSystemModal(🪨 石頭種類：${stDef.name}\n🗓️ 簽到日期：${stone.date || '早期紀錄'}${noteText});
+const noteText = stone.note ? `\n📝 紀錄：${stone.note}` : '\n📝 紀錄：無';
+showSystemModal(`🪨 石頭種類：${stDef.name}\n🗓️ 簽到日期：${stone.date || '早期紀錄'}${noteText}`);
 };
 if (animateLast && index === state.stones.length - 1) el.classList.add('animate-drop');
 container.appendChild(el);
@@ -420,11 +420,11 @@ return;
 unlockedStones.forEach(st => {
 const count = counts[st.id] || 0;
 const card = document.createElement('div');
-card.className = p-3 rounded-xl border flex gap-3 items-center bg-white border-slate-200;
+card.className = "p-3 rounded-xl border flex gap-3 items-center bg-white border-slate-200";
 let iconStyle = '';
 if (st.color === 'rainbow') iconStyle = 'background: linear-gradient(45deg, #ff007f, #ffee00, #00bfff);';
-else iconStyle = background-color: ${st.color}; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2);;
-card.innerHTML = <div class="w-10 h-10 stone-shape-1 flex-shrink-0 shadow-sm" style="${iconStyle}"></div> <div class="flex-1"> <div class="flex justify-between items-center"> <h4 class="font-bold text-xs text-slate-800"> ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆) </h4> </div> <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p> </div>;
+else iconStyle = `background-color: ${st.color}; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2);`;
+card.innerHTML = `<div class="w-10 h-10 stone-shape-1 flex-shrink-0 shadow-sm" style="${iconStyle}"></div> <div class="flex-1"> <div class="flex justify-between items-center"> <h4 class="font-bold text-xs text-slate-800"> ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆) </h4> </div> <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p> </div>`;
 container.appendChild(card);
 });
 }
@@ -435,7 +435,7 @@ showSystemModal('📜 目前還沒有包含筆記的石頭喔！試著在簽到�
 return;
 }
 const picked = noteStones[Math.floor(Math.random() * noteStones.length)];
-showSystemModal(🔮【穿越時光的回憶】\n\n🗓️ 簽到日期：${picked.date}\n✍️ 當時的你寫下了：\n「${picked.note}」);
+showSystemModal(`🔮【穿越時光的回憶】\n\n🗓️ 簽到日期：${picked.date}\n✍️ 當時的你寫下了：\n「${picked.note}」`);
 }
 function renderCalendar() {
 const grid = document.getElementById('calendar-container');
@@ -446,12 +446,12 @@ const month = now.getMonth();
 const firstDay = new Date(year, month, 1).getDay();
 const totalDays = new Date(year, month + 1, 0).getDate();
 const weekHeaders = ['日', '一', '二', '三', '四', '五', '六'];
-weekHeaders.forEach(h => grid.innerHTML += <div class="font-bold text-slate-400 py-1">${h}</div>);
-for (let i = 0; i < firstDay; i++) grid.innerHTML += <div></div>;
+weekHeaders.forEach(h => grid.innerHTML += `<div class="font-bold text-slate-400 py-1">${h}</div>`);
+for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
 for (let day = 1; day <= totalDays; day++) {
-const dateStr = ${year}/${month + 1}/${day};
+const dateStr = `${year}/${month + 1}/${day}`;
 const hasCheckIn = state.stones.some(s => s.date && new Date(s.date).toLocaleDateString() === new Date(dateStr).toLocaleDateString());
-grid.innerHTML += <div class="py-2 rounded-lg font-medium ${hasCheckIn ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-slate-50 text-slate-400'}"> ${day} </div>;
+grid.innerHTML += `<div class="py-2 rounded-lg font-medium ${hasCheckIn ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-slate-50 text-slate-400'}"> ${day} </div>`;
 }
 }
 function renderCapsule() {
@@ -461,12 +461,12 @@ container.innerHTML = '<p class="text-center py-4 text-slate-400">時光膠囊�
 return;
 }
 const noteStones = state.stones.filter(s => s.note);
-container.innerHTML = <div class="bg-indigo-50 p-3 rounded-xl mb-2"> <p class="font-bold text-indigo-900">📊 歷史總計：</p> <p>總累積石頭：<b>${state.count}</b> 顆</p> <p>寫下記錄的心情筆記：<b>${noteStones.length}</b> 篇</p> </div> <div class="font-bold text-slate-700 mt-2 mb-1">📜 你的生活點滴回顧：</div> <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1"> ${noteStones.map(s =>
-<div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
-<span class="text-[10px] text-indigo-500 font-bold">{s.date}</span>
-<p class="text-xs text-slate-700">{s.note}</p>
-</div>
-).join('')} </div> ;
+container.innerHTML = `<div class="bg-indigo-50 p-3 rounded-xl mb-2"> <p class="font-bold text-indigo-900">📊 歷史總計：</p> <p>總累積石頭：<b>${state.count}</b> 顆</p> <p>寫下記錄的心情筆記：<b>${noteStones.length}</b> 篇</p> </div> <div class="font-bold text-slate-700 mt-2 mb-1">📜 你的生活點滴回顧：</div> <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1"> ${noteStones.map(s =>
+`<div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+<span class="text-[10px] text-indigo-500 font-bold">${s.date}</span>
+<p class="text-xs text-slate-700">${s.note}</p>
+</div>`
+).join('')} </div>`;
 }
 function renderAchievements() {
 const list = document.getElementById('achieve-list');
@@ -475,11 +475,11 @@ JARS.forEach(j => {
 const isUnlocked = state.unlockedJars.includes(j.id);
 const isCurrent = state.currentJar === j.id;
 if (j.type === 'hidden' && !isUnlocked) return;
-list.innerHTML += <div class="p-3 rounded-xl border ${isUnlocked ? 'bg-white border-indigo-200' : 'bg-slate-50 border-slate-200'} flex justify-between items-center"> <div> <div class="font-bold text-xs ${isUnlocked ? 'text-indigo-900' : 'text-slate-500'}">${j.name} ${isUnlocked ? '✅' : '🔒'}</div> <div class="text-[10px] text-slate-400">${j.desc}</div> </div> ${isUnlocked ?
-<button onclick="applyJarTheme('${j.id}'); closeModal('achieve-modal');" class="px-2.5 py-1 text-xs rounded-lg font-bold ${isCurrent ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white'}">
+list.innerHTML += `<div class="p-3 rounded-xl border ${isUnlocked ? 'bg-white border-indigo-200' : 'bg-slate-50 border-slate-200'} flex justify-between items-center"> <div> <div class="font-bold text-xs ${isUnlocked ? 'text-indigo-900' : 'text-slate-500'}">${j.name} ${isUnlocked ? '✅' : '🔒'}</div> <div class="text-[10px] text-slate-400">${j.desc}</div> </div> ${isUnlocked ?
+`<button onclick="applyJarTheme('${j.id}'); closeModal('achieve-modal');" class="px-2.5 py-1 text-xs rounded-lg font-bold ${isCurrent ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white'}">
 ${isCurrent ? '套用中' : '使用'}
-</button>
-: ''} </div>;
+</button>`
+: ''} </div>`;
 });
 }
 function openModal(id) {
@@ -529,8 +529,8 @@ return;
 }
 state.customTasks.forEach(task => {
 const item = document.createElement('div');
-item.className = flex items-center justify-between p-1.5 rounded-xl border transition-all ${task.done ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700'};
-item.innerHTML = <label class="flex items-center gap-2 flex-1 cursor-pointer"> <input type="checkbox" ${task.done ? 'checked' : ''} onclick="toggleTaskDone(${task.id})" class="w-3.5 h-3.5 text-indigo-600 rounded"> <span class="text-xs font-medium ${task.done ? 'line-through opacity-75' : ''}">${task.name}</span> </label> <button onclick="deleteCustomTask(${task.id})" class="text-slate-400 hover:text-red-500 px-1 text-xs">🗑️</button>;
+item.className = `flex items-center justify-between p-1.5 rounded-xl border transition-all ${task.done ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
+item.innerHTML = `<label class="flex items-center gap-2 flex-1 cursor-pointer"> <input type="checkbox" ${task.done ? 'checked' : ''} onclick="toggleTaskDone(${task.id})" class="w-3.5 h-3.5 text-indigo-600 rounded"> <span class="text-xs font-medium ${task.done ? 'line-through opacity-75' : ''}">${task.name}</span> </label> <button onclick="deleteCustomTask(${task.id})" class="text-slate-400 hover:text-red-500 px-1 text-xs">🗑️</button>`;
 container.appendChild(item);
 });
 }
@@ -548,7 +548,7 @@ if (noteInput) noteInput.disabled = true;
 function saveData() { localStorage.setItem('daily_jar_data_v3', JSON.stringify(state)); }
 function exportData() {
 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-const a = document.createElement('a'); a.href = dataStr; a.download = daily_jar_backup_${new Date().toISOString().slice(0,10)}.json; a.click();
+const a = document.createElement('a'); a.href = dataStr; a.download = `daily_jar_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
 }
 function importData(event) {
 const file = event.target.files[0];
