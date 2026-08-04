@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>每日簽到罐 3.0</title>
+<title>每日簽到罐 3.1</title>
 <link rel="icon" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
 <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuaWueWPo+eUn+iXhuW3rCIsCiAgInNob3J0X25hbWUiOiAi5Lnv5oee5qGIIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmCeLCKICAidGhlbWVfY29sb3IiOiAiNGE0NmU1Igp9">
@@ -27,19 +27,20 @@
 }
 .shake-jar { animation: shakeJiggle 0.5s ease-in-out; }
 
-/* 7 種截然不同、輪廓分明的有機石頭剪影（完全獨立於種類） */
-.stone-shape-1 { clip-path: polygon(50% 0%, 90% 25%, 85% 85%, 50% 100%, 15% 85%, 10% 25%); border-radius: 35%; } /* 飽滿水滴卵石 */
-.stone-shape-2 { clip-path: polygon(30% 10%, 80% 20%, 95% 70%, 60% 95%, 15% 80%, 5% 40%); border-radius: 40%; } /* 不規則有機軟石 */
-.stone-shape-3 { clip-path: polygon(10% 30%, 90% 10%, 100% 70%, 80% 90%, 20% 95%, 0% 60%); border-radius: 50% / 30%; } /* 扁平長形水漂石 */
-.stone-shape-4 { clip-path: polygon(50% 5%, 95% 45%, 75% 95%, 25% 95%, 5% 45%); border-radius: 30%; }     /* 菱角圓潤晶石 */
-.stone-shape-5 { clip-path: polygon(20% 20%, 80% 10%, 95% 60%, 70% 95%, 30% 90%, 5% 50%); border-radius: 45%; } /* 飽滿豐厚豆莢石 */
-.stone-shape-6 { clip-path: polygon(35% 10%, 75% 15%, 95% 50%, 85% 85%, 45% 95%, 15% 80%, 5% 40%); border-radius: 50%; } /* 雲朵澎澎石 */
-.stone-shape-7 { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); border-radius: 35%; }            /* 柔和鑽石寶石 */
+/* 7 種溫潤光滑、毫無銳角的有機鵝卵石造型（利用不規則圓角與長寬比營造鑑別度） */
+.stone-shape-1 { width: 34px; height: 28px; border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%; } /* 飽滿橫向卵石 */
+.stone-shape-2 { width: 28px; height: 34px; border-radius: 50% 50% 40% 60% / 40% 50% 60% 50%; } /* 縱向長形水滴石 */
+.stone-shape-3 { width: 36px; height: 24px; border-radius: 50% / 70% 70% 30% 30%; }         /* 扁平寬水漂石 */
+.stone-shape-4 { width: 30px; height: 30px; border-radius: 42% 58% 45% 55% / 55% 45% 58% 42%; } /* 不規則圓胖石 */
+.stone-shape-5 { width: 32px; height: 26px; border-radius: 70% 30% 60% 40% / 40% 60% 30% 70%; } /* 微彎流線豆石 */
+.stone-shape-6 { width: 33px; height: 31px; border-radius: 52% 48% 58% 42% / 45% 55% 45% 55%; } /* 厚實飽滿圓石 */
+.stone-shape-7 { width: 29px; height: 33px; border-radius: 45% 55% 52% 48% / 58% 42% 55% 45%; } /* 溫柔蛋形卵石 */
 
 /* 柔和圓潤的流光星形（彩虹星專屬） */
 .stone-shape-star {
+  width: 32px; height: 32px;
   clip-path: polygon(50% 0%, 63% 35%, 100% 38%, 71% 62%, 82% 100%, 50% 78%, 18% 100%, 29% 62%, 0% 38%, 37% 35%);
-  border-radius: 25% !important;
+  border-radius: 35% !important;
 }
 
 /* 3% 稀有彩虹流光效果 */
@@ -71,7 +72,7 @@ animation: rainbowGlow 3s ease infinite;
 <header class="w-full bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 mb-3">
 <div class="flex justify-between items-center mb-2">
 <div>
-<h1 class="text-base font-bold text-slate-800 tracking-wide">每日簽到罐 3.0</h1>
+<h1 class="text-base font-bold text-slate-800 tracking-wide">每日簽到罐 3.1</h1>
 <p class="text-[10px] text-slate-400">累積小成就，遇見更好的自己</p>
 </div>
 <div class="flex gap-1.5">
@@ -394,9 +395,9 @@ const el = document.createElement('div');
 const shapeIdx = stone.shapeIndex || 1;
 const shapeClass = (stone.stoneId === 'rainbow_star') ? 'stone-shape-star' : `stone-shape-${shapeIdx}`;
 if (stDef.color === 'rainbow') {
-el.className = `stone-item w-8 h-8 ${shapeClass} rainbow-glow shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
+el.className = `stone-item ${shapeClass} rainbow-glow shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
 } else {
-el.className = `stone-item w-8 h-8 ${shapeClass} shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
+el.className = `stone-item ${shapeClass} shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
 el.style.backgroundColor = stDef.color;
 el.style.boxShadow = 'inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)';
 }
@@ -431,7 +432,7 @@ let iconStyle = '';
 let wikiShapeClass = (st.id === 'rainbow_star') ? 'stone-shape-star rainbow-glow' : 'stone-shape-1';
 if (st.color === 'rainbow') iconStyle = '';
 else iconStyle = `background-color: ${st.color}; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2);`;
-card.innerHTML = `<div class="w-10 h-10 ${wikiShapeClass} flex-shrink-0 shadow-sm" style="${iconStyle}"></div> <div class="flex-1"> <div class="flex justify-between items-center"> <h4 class="font-bold text-xs text-slate-800"> ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆) </h4> </div> <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p> </div>`;
+card.innerHTML = `<div class="${wikiShapeClass} flex-shrink-0 shadow-sm" style="${iconStyle}"></div> <div class="flex-1"> <div class="flex justify-between items-center"> <h4 class="font-bold text-xs text-slate-800"> ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆) </h4> </div> <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p> </div>`;
 container.appendChild(card);
 });
 }
@@ -562,8 +563,9 @@ const file = event.target.files[0];
 if (!file) return;
 const reader = new FileReader();
 reader.onload = function(e) {
+text = e.target.result;
 try {
-state = JSON.parse(e.target.result);
+state = JSON.parse(text);
 saveData(); init(); showSystemModal('資料還原成功！');
 } catch (err) { showSystemModal('檔案格式錯誤！'); }
 };
