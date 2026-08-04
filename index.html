@@ -212,14 +212,14 @@
     ];
 
     const JARS = [
-      { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', unlocked: true },
-      { id: 'chubby', name: '🍯 圓滾滾胖胖瓶', class: 'jar-chubby', desc: '【初露鋒芒】累積簽到 7 天解鎖。', achId: 'a7' },
-      { id: 'wish', name: '✨ 復古木塞許願瓶', class: 'jar-wish', desc: '【習慣養成】累積簽到 30 天解鎖。', achId: 'a30' },
-      { id: 'night', name: '🌌 星空夜光玻璃瓶', class: 'jar-night', desc: '【天選之星】獲得 1 顆彩虹星解鎖。', achId: 'aStar' },
-      { id: 'crystal', name: '💎 典雅八角水晶瓶', class: 'jar-crystal', desc: '【百日築夢】累積簽到 100 天解鎖。', achId: 'a100' },
-      { id: 'apothecary', name: '📜 典藏復古藥劑瓶', class: 'jar-apothecary', desc: '【深夜開罐】深夜 (23:00~02:00) 簽到解鎖。', achId: 'aNight' },
-      { id: 'tea', name: '🍵 陶瓷茶葉罐', class: 'jar-tea', desc: '【真情流露】寫下 30 次筆記解鎖。', achId: 'aNotes' },
-      { id: 'royal', name: '👑 尊爵金邊聖誕瓶', class: 'jar-royal', desc: '【月度大滿貫】單月完全無漏簽解鎖。', achId: 'aGrand' }
+      { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', unlocked: true, type: 'default' },
+      { id: 'chubby', name: '🍯 圓滾滾胖胖瓶', class: 'jar-chubby', desc: '【初露鋒芒】累積簽到 7 天解鎖。', achId: 'a7', type: 'visible' },
+      { id: 'wish', name: '✨ 復古木塞許願瓶', class: 'jar-wish', desc: '【習慣養成】累積簽到 30 天解鎖。', achId: 'a30', type: 'visible' },
+      { id: 'crystal', name: '💎 典雅八角水晶瓶', class: 'jar-crystal', desc: '【百日築夢】累積簽到 100 天解鎖。', achId: 'a100', type: 'visible' },
+      { id: 'night', name: '🌌 星空夜光玻璃瓶', class: 'jar-night', desc: '【天選之星】獲得 1 顆彩虹星解鎖。', achId: 'aStar', type: 'hidden' },
+      { id: 'apothecary', name: '📜 典藏復古藥劑瓶', class: 'jar-apothecary', desc: '【深夜開罐】深夜 (23:00~02:00) 簽到解鎖。', achId: 'aNight', type: 'hidden' },
+      { id: 'tea', name: '🍵 陶瓷茶葉罐', class: 'jar-tea', desc: '【真情流露】寫下 30 次筆記解鎖。', achId: 'aNotes', type: 'hidden' },
+      { id: 'royal', name: '👑 尊爵金邊聖誕瓶', class: 'jar-royal', desc: '【月度大滿貫】單月完全無漏簽解鎖。', achId: 'aGrand', type: 'hidden' }
     ];
 
     let state = {
@@ -244,18 +244,37 @@
           try {
             const parsedOld = JSON.parse(oldV2);
             state = { ...state, ...parsedOld };
-            if (!state.unlockedJars) state.unlockedJars = ['classic'];
-            if (!state.unlockedAchs) state.unlockedAchs = [];
-            if (!state.currentJar) state.currentJar = 'classic';
-            if (!state.collectedStones) state.collectedStones = STONEDB.filter(s => s.type === 'initial').map(s => s.id);
-            saveData();
           } catch(e) {}
         }
       } else {
         state = JSON.parse(saved);
-        if (!state.collectedStones) {
-          state.collectedStones = STONEDB.filter(s => s.type === 'initial').map(s => s.id);
-        }
+      }
+
+      if (!state.unlockedJars) state.unlockedJars = ['classic'];
+      if (!state.unlockedAchs) state.unlockedAchs = [];
+      if (!state.currentJar) state.currentJar = 'classic';
+      if (!state.collectedStones) {
+        state.collectedStones = STONEDB.filter(s => s.type === 'initial').map(s => s.id);
+      }
+
+      // 修復歷史紀錄若石頭 ID 遺失或錯誤導致全部變鵝卵石的問題
+      const initialIds = STONEDB.filter(s => s.type === 'initial').map(s => s.id);
+      if (state.stones && state.stones.length > 0) {
+        state.stones.forEach((stone, idx) => {
+          if (!stone.stoneId || stone.stoneId === 'river_pebble') {
+            // 如果剛好有舊的稀有標記
+            if (stone.isRare || stone.shape === 99) {
+              stone.stoneId = 'rainbow_star';
+            } else {
+              // 透過索引或隨機從初始石池中平均指派，避免全部擠在同一顆
+              stone.stoneId = initialIds[idx % initialIds.length];
+            }
+          }
+          // 確保收集圖鑑裡包含該石頭
+          if (!state.collectedStones.includes(stone.stoneId)) {
+            state.collectedStones.push(stone.stoneId);
+          }
+        });
       }
 
       const today = new Date().toLocaleDateString();
@@ -369,7 +388,7 @@
 
     function checkAchievements(hour, silent = false) {
       const notesCount = state.stones.filter(s => s.note && s.note.length > 0).length;
-      const hasStar = state.stones.some(s => s.stoneId === 'rainbow_star' || s.isRare || s.shape === 99);
+      const hasStar = state.stones.some(s => s.stoneId === 'rainbow_star');
 
       let newlyUnlockedJars = [];
       let newlyUnlockedStones = [];
@@ -417,11 +436,7 @@
 
       state.stones.forEach((stone, index) => {
         let stDef = STONEDB.find(s => s.id === stone.stoneId);
-        
-        if (!stDef) {
-          if (stone.isRare || stone.shape === 99) stDef = STONEDB.find(s => s.id === 'rainbow_star');
-          else stDef = STONEDB[0];
-        }
+        if (!stDef) stDef = STONEDB[0];
 
         const el = document.createElement('div');
         const shapeClass = stDef.shape || 'shape-pebble';
@@ -457,11 +472,18 @@
         counts[s.stoneId] = (counts[s.stoneId] || 0) + 1;
       });
 
-      STONEDB.forEach(st => {
-        const isUnlocked = state.collectedStones.includes(st.id);
+      // 只篩選出「已經獲得過」的石頭顯示在圖鑑中
+      const unlockedStones = STONEDB.filter(st => state.collectedStones.includes(st.id));
+
+      if (unlockedStones.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">目前還沒有解鎖任何石頭，快去簽到收集吧！</p>';
+        return;
+      }
+
+      unlockedStones.forEach(st => {
         const count = counts[st.id] || 0;
         const card = document.createElement('div');
-        card.className = `p-3 rounded-xl border flex gap-3 items-center ${isUnlocked ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-200 opacity-60'}`;
+        card.className = `p-3 rounded-xl border flex gap-3 items-center bg-white border-slate-200`;
 
         let iconStyle = '';
         if (st.color === 'rainbow') iconStyle = 'background: linear-gradient(45deg, #ff007f, #ffee00, #00bfff);';
@@ -471,14 +493,11 @@
           <div class="w-10 h-10 ${st.shape} flex-shrink-0 shadow-sm border border-black/10" style="${iconStyle}"></div>
           <div class="flex-1">
             <div class="flex justify-between items-center">
-              <h4 class="font-bold text-xs ${isUnlocked ? 'text-slate-800' : 'text-slate-500'}">
-                ${st.name} ${isUnlocked ? `(擁有 <span class="text-indigo-600 font-black">${count}</span> 顆)` : '🔒'}
+              <h4 class="font-bold text-xs text-slate-800">
+                ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆)
               </h4>
             </div>
-            ${isUnlocked 
-              ? `<p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p>`
-              : `<p class="text-[10px] text-amber-600 mt-0.5">解鎖條件：${st.cond || '常見初始石'}</p>`
-            }
+            <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p>
           </div>
         `;
         container.appendChild(card);
@@ -548,11 +567,16 @@
     function renderAchievements() {
       const list = document.getElementById('achieve-list');
       list.innerHTML = '';
+      
       JARS.forEach(j => {
         const isUnlocked = state.unlockedJars.includes(j.id);
         const isCurrent = state.currentJar === j.id;
+
+        // 規則：簽到成就（visible 或 default）看得到；隱藏成就（hidden）未解鎖前不顯示
+        if (j.type === 'hidden' && !isUnlocked) return;
+
         list.innerHTML += `
-          <div class="p-3 rounded-xl border ${isUnlocked ? 'bg-white border-indigo-200' : 'bg-slate-50 border-slate-200 opacity-60'} flex justify-between items-center">
+          <div class="p-3 rounded-xl border ${isUnlocked ? 'bg-white border-indigo-200' : 'bg-slate-50 border-slate-200'} flex justify-between items-center">
             <div>
               <div class="font-bold text-xs ${isUnlocked ? 'text-indigo-900' : 'text-slate-500'}">${j.name} ${isUnlocked ? '✅' : '🔒'}</div>
               <div class="text-[10px] text-slate-400">${j.desc}</div>
