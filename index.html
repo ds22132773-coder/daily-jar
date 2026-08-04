@@ -6,12 +6,14 @@
   <title>每日簽到石頭與任務筆記系統</title>
   <style>
     :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
-      --accent-color: #7c4dff;
-      --text-color: #e0e0e0;
-      --text-secondary: #a0a0a0;
-      --border-color: #333;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --accent-color: #6c5ce7;
+      --accent-hover: #5b4bc4;
+      --text-color: #2d3436;
+      --text-secondary: #636e72;
+      --border-color: #e9ecef;
+      --input-bg: #f1f3f5;
     }
 
     * {
@@ -45,10 +47,10 @@
 
     .card {
       background-color: var(--card-bg);
-      border-radius: 12px;
-      padding: 20px;
+      border-radius: 16px;
+      padding: 24px;
       border: 1px solid var(--border-color);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
     .full-width {
@@ -57,13 +59,13 @@
 
     h2 {
       font-size: 1.2rem;
-      margin-bottom: 15px;
-      color: #fff;
+      margin-bottom: 16px;
+      color: var(--text-color);
       display: flex;
       align-items: center;
       gap: 8px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
+      padding-bottom: 10px;
     }
 
     /* 按鈕樣式 */
@@ -71,20 +73,22 @@
       background-color: var(--accent-color);
       color: #fff;
       border: none;
-      padding: 10px 16px;
+      padding: 10px 18px;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
-      transition: opacity 0.2s;
+      font-weight: 600;
+      transition: all 0.2s ease;
     }
 
     .btn:hover {
-      opacity: 0.9;
+      background-color: var(--accent-hover);
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
     }
 
     .btn:disabled {
-      background-color: #444;
+      background-color: #ced4da;
       cursor: not-allowed;
+      box-shadow: none;
     }
 
     /* Canvas 簽到區域 */
@@ -97,9 +101,10 @@
     }
 
     #stoneCanvas {
-      background: #181818;
+      background: #fafafa;
       border-radius: 50%;
       border: 2px solid var(--border-color);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     /* 統計數字 */
@@ -108,9 +113,10 @@
       justify-content: space-around;
       width: 100%;
       margin-top: 10px;
-      background: #252525;
-      padding: 10px;
-      border-radius: 8px;
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
     }
 
     .stat-item {
@@ -118,7 +124,7 @@
     }
 
     .stat-value {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: bold;
       color: var(--accent-color);
     }
@@ -126,6 +132,7 @@
     .stat-label {
       font-size: 0.8rem;
       color: var(--text-secondary);
+      margin-top: 2px;
     }
 
     /* 列表樣式 (任務與筆記) */
@@ -137,12 +144,19 @@
 
     input[type="text"], textarea {
       flex: 1;
-      background: #252525;
+      background: var(--input-bg);
       border: 1px solid var(--border-color);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
+      color: var(--text-color);
+      padding: 10px 14px;
+      border-radius: 8px;
       outline: none;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-color);
+      background: #fff;
     }
 
     ul {
@@ -152,13 +166,14 @@
     }
 
     li {
-      background: #252525;
-      padding: 10px;
-      border-radius: 6px;
+      background: #f8f9fa;
+      padding: 10px 14px;
+      border-radius: 8px;
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border: 1px solid var(--border-color);
     }
 
     li.completed span {
@@ -169,31 +184,38 @@
     .delete-btn {
       background: none;
       border: none;
-      color: #ff5252;
+      color: #ff7675;
       cursor: pointer;
       font-size: 0.9rem;
+      padding: 4px;
+      transition: opacity 0.2s;
+    }
+
+    .delete-btn:hover {
+      opacity: 0.7;
     }
 
     /* 石頭圖鑑網格 */
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+      gap: 12px;
       max-height: 220px;
       overflow-y: auto;
       padding: 5px;
     }
 
     .gallery-item {
-      background: #252525;
-      border-radius: 8px;
-      padding: 8px;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 10px 8px;
       text-align: center;
       font-size: 0.75rem;
       border: 1px solid var(--border-color);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
 
-    /* 成成就標籤 */
+    /* 成就標籤 */
     .badge-list {
       display: flex;
       flex-wrap: wrap;
@@ -201,17 +223,18 @@
     }
 
     .badge {
-      background: #333;
-      padding: 4px 10px;
-      border-radius: 12px;
+      background: #e9ecef;
+      padding: 6px 12px;
+      border-radius: 20px;
       font-size: 0.8rem;
-      color: #888;
+      color: var(--text-secondary);
     }
 
     .badge.unlocked {
-      background: #3f51b5;
-      color: #fff;
-      border: 1px solid #7986cb;
+      background: #e0e7ff;
+      color: #4338ca;
+      border: 1px solid #c7d2fe;
+      font-weight: 500;
     }
   </style>
 </head>
@@ -286,13 +309,13 @@ const STONES = {
   RIVER_PEBBLE: { id: 'RIVER_PEBBLE', name: '河床鵝卵石', shape: 'pebble', color: '#9E9E9E' },
   ROSE_QUARTZ:  { id: 'ROSE_QUARTZ',  name: '粉晶',       shape: 'pebble', color: '#F48FB1', glow: 'rgba(244,143,177,0.5)' },
   AMETHYST:     { id: 'AMETHYST',     name: '紫水晶',     shape: 'crystal',color: '#9C27B0', glow: 'rgba(156,39,176,0.6)' },
-  OPAL:         { id: 'OPAL',         name: '彩虹蛋白石', shape: 'heptagon',color: '#E0F7FA', glow: 'rgba(0,255,255,0.9)' },
-  METEORITE:    { id: 'METEORITE',    name: '黑玻璃隕石', shape: 'nugget', color: '#332244', glow: 'rgba(103,58,183,0.8)' },
+  OPAL:         { id: 'OPAL',         name: '彩虹蛋白石', shape: 'heptagon',color: '#80DEEA', glow: 'rgba(0,188,212,0.8)' },
+  METEORITE:    { id: 'METEORITE',    name: '黑玻璃隕石', shape: 'nugget', color: '#4A148C', glow: 'rgba(103,58,183,0.6)' },
   
   // 成就/節日解鎖石頭
   CHRONO_METEOR:{ id: 'CHRONO_METEOR',name: '時空隕石',   shape: 'heptagon',color: '#3F51B5', glow: 'rgba(63,81,181,0.8)' },
-  GOLD_NUGGET:  { id: 'GOLD_NUGGET',  name: '黃金狗頭金', shape: 'nugget', color: '#FFD700', glow: 'rgba(255,215,0,0.8)' },
-  FLUORITE:     { id: 'FLUORITE',     name: '夜光螢石',   shape: 'octahedron',color: '#00E676', glow: 'rgba(0,230,118,0.9)', pulse: true },
+  GOLD_NUGGET:  { id: 'GOLD_NUGGET',  name: '黃金狗頭金', shape: 'nugget', color: '#FFB300', glow: 'rgba(255,179,0,0.8)' },
+  FLUORITE:     { id: 'FLUORITE',     name: '夜光螢石',   shape: 'octahedron',color: '#00C853', glow: 'rgba(0,200,83,0.8)', pulse: true },
   SUPER_SEVEN:  { id: 'SUPER_SEVEN',  name: '超七水晶',   shape: 'crystal',color: '#7B1FA2', glow: 'rgba(123,31,162,0.7)' },
   NEW_YEAR_STAR:{ id: 'NEW_YEAR_STAR',name: '新年星輝石', shape: 'star',   color: '#FF4081', glow: 'rgba(255,64,129,0.9)' },
   GHOST_STONE:  { id: 'GHOST_STONE',  name: '幽靈陰陽石', shape: 'teardrop',color: '#673AB7', glow: 'rgba(103,58,183,0.8)' },
@@ -425,7 +448,7 @@ function drawStone(ctx, x, y, radius, stoneConfig, time = 0) {
   ctx.fill();
 
   // 高光效果
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
   ctx.beginPath();
   ctx.arc(-radius * 0.2, -radius * 0.3, radius * 0.3, 0, Math.PI * 2);
   ctx.fill();
@@ -587,7 +610,7 @@ function renderNotes() {
 function renderGallery() {
   const grid = document.getElementById('stoneGallery');
   if (state.userProgress.collectedStones.length === 0) {
-    grid.innerHTML = '<div style="color:#666; grid-column:1/-1;">尚未採集任何石頭...</div>';
+    grid.innerHTML = '<div style="color:#a0a0a0; grid-column:1/-1; text-align:center; padding: 20px 0;">尚未採集任何石頭...</div>';
     return;
   }
   grid.innerHTML = state.userProgress.collectedStones.map(s => `
