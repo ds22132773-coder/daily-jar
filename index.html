@@ -1,604 +1,247 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+/**
+ * 每日簽到石頭與成就系統完整模組
+ */
+
+// ==========================================
+// 1. 石頭資料庫定義 (含形狀、顏色與成就連結)
+// ==========================================
+const STONES = {
+  // --- 基礎礦石 (部分範例) ---
+  RIVER_PEBBLE: { id: 'RIVER_PEBBLE', name: '河床鵝卵石', shape: 'pebble', color: '#9E9E9E', category: 'base' },
+  ROSE_QUARTZ:  { id: 'ROSE_QUARTZ',  name: '粉晶',       shape: 'pebble', color: '#F48FB1', glow: 'rgba(244,143,177,0.5)', category: 'base' },
+  AMETHYST:     { id: 'AMETHYST',     name: '紫水晶',     shape: 'crystal',color: '#9C27B0', glow: 'rgba(156,39,176,0.6)', category: 'base' },
   
-  <title>每日簽到罐 3.0 - 現實礦石版</title>
-  
-  <link rel="icon" href="./icon.png">
-  <link rel="apple-touch-icon" href="./icon.png">
-  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuaWueWPo+eUn+iXhuW3rCIsCiAgInNob3J0X25hbWUiOiAi5Lnv5oee5qGIIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICI0ZjQ2ZTUiCn0=">
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <style>
-    @keyframes dropIn {
-      0% { transform: translateY(-180px) scale(0.6) rotate(-10deg); opacity: 0; }
-      70% { transform: translateY(10px) scale(1.05) rotate(5deg); opacity: 1; }
-      100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+  // --- 無條件機率稀有石 ---
+  OPAL: { id: 'OPAL', name: '彩虹蛋白石', shape: 'heptagon', color: '#E0F7FA', glow: 'rgba(0, 255, 255, 0.9)', category: 'rare' },
+  METEORITE: { id: 'METEORITE', name: '深夜黑玻璃隕石', shape: 'nugget', color: '#212121', glow: 'rgba(103, 58, 183, 0.8)', category: 'rare' },
+
+  // --- 成就解鎖進階石頭 ---
+  CHRONO_METEOR: {
+    id: 'CHRONO_METEOR', name: '時空隕石', shape: 'heptagon',
+    color: '#3F51B5', glow: 'rgba(63, 81, 181, 0.8)',
+    unlockAchievementId: 'ACH_7_DAYS', category: 'achievement'
+  },
+  GOLD_NUGGET: {
+    id: 'GOLD_NUGGET', name: '黃金狗頭金', shape: 'nugget',
+    color: '#FFD700', glow: 'rgba(255, 215, 0, 0.8)',
+    unlockAchievementId: 'ACH_30_DAYS', category: 'achievement'
+  },
+  FLUORITE: {
+    id: 'FLUORITE', name: '夜光螢石', shape: 'octahedron',
+    color: '#00E676', glow: 'rgba(0, 230, 118, 0.9)', pulse: true,
+    unlockAchievementId: 'ACH_NIGHT_5', category: 'achievement'
+  },
+  SUPER_SEVEN: {
+    id: 'SUPER_SEVEN', name: '超七水晶', shape: 'crystal',
+    color: '#7B1FA2', glow: 'rgba(123, 31, 162, 0.7)',
+    unlockAchievementId: 'ACH_ALL_BASE', category: 'achievement'
+  },
+
+  // --- 特定節日成就石頭 ---
+  NEW_YEAR_STAR: {
+    id: 'NEW_YEAR_STAR', name: '新年星輝石', shape: 'star',
+    color: '#FF4081', glow: 'rgba(255, 64, 129, 0.9)',
+    unlockAchievementId: 'ACH_NEW_YEAR', category: 'holiday'
+  },
+  GHOST_STONE: {
+    id: 'GHOST_STONE', name: '幽靈陰陽石', shape: 'teardrop',
+    color: '#673AB7', glow: 'rgba(103, 58, 183, 0.8)',
+    unlockAchievementId: 'ACH_GHOST_FEST', category: 'holiday'
+  },
+  XMAS_CRYSTAL: {
+    id: 'XMAS_CRYSTAL', name: '聖誕結晶石', shape: 'snowflake',
+    color: '#00BCD4', glow: 'rgba(0, 188, 212, 0.9)',
+    unlockAchievementId: 'ACH_XMAS', category: 'holiday'
+  }
+};
+
+// ==========================================
+// 2. Canvas 各種形狀繪製邏輯
+// ==========================================
+function drawStone(ctx, x, y, radius, stoneConfig, time = 0) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // 1. 發光特效（如有設定 pulse 則有呼吸燈效果）
+  if (stoneConfig.glow) {
+    let glowAlpha = 1;
+    if (stoneConfig.pulse) {
+      glowAlpha = (Math.sin(time / 300) + 1) / 2 * 0.5 + 0.5; // 0.5 ~ 1.0 呼吸變化
     }
-    .animate-drop { animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    
-    @keyframes shakeJiggle {
-      0% { transform: rotate(0deg) translateX(0); }
-      25% { transform: rotate(-4deg) translateX(-3px); }
-      50% { transform: rotate(4deg) translateX(3px); }
-      75% { transform: rotate(-2deg) translateX(-1px); }
-      100% { transform: rotate(0deg) translateX(0); }
-    }
-    .shake-jar { animation: shakeJiggle 0.5s ease-in-out; }
+    ctx.shadowColor = stoneConfig.glow;
+    ctx.shadowBlur = 15 * glowAlpha;
+  }
 
-    /* === 現實石頭視覺 CSS === */
-    .stone-item {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3), 1px 2px 4px rgba(0,0,0,0.2);
-      flex-shrink: 0;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .stone-item:hover { transform: scale(1.15) !important; z-index: 30; }
+  ctx.fillStyle = stoneConfig.color;
+  ctx.beginPath();
 
-    /* 基礎礦石 */
-    .stone-pebble { background: linear-gradient(135deg, #e2e8f0, #94a3b8); }
-    .stone-rose_quartz { background: linear-gradient(135deg, #fbcfe8, #f472b6); }
-    .stone-aventurine { background: linear-gradient(135deg, #6ee7b7, #047857); }
-    .stone-lapis { background: radial-gradient(circle at 30% 30%, #60a5fa, #1e3a8a); }
-    .stone-tigereye { background: linear-gradient(45deg, #78350f, #f59e0b, #451a03); }
-    .stone-amethyst { background: linear-gradient(135deg, #e9d5ff, #7e22ce); }
-    .stone-quartz { background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(203,213,225,0.6)); border: 1px solid #cbd5e1; }
-    .stone-turquoise { background: radial-gradient(circle at 40% 40%, #2dd4bf, #0f766e); }
-    .stone-obsidian { background: radial-gradient(circle at 30% 30%, #475569, #0f172a); }
-    .stone-agate { background: linear-gradient(135deg, #fdba74, #c2410c); }
+  // 2. 依據 shape 繪製幾何線條
+  switch (stoneConfig.shape) {
+    case 'pebble': // 平滑鵝卵石/圓形
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      break;
 
-    /* 進階稀有奇石 */
-    .stone-opal {
-      background: linear-gradient(45deg, #ff007f, #ff7f00, #ffee00, #00ff7f, #00bfff, #8b00ff);
-      background-size: 200% 200%;
-      animation: rainbowGlow 3s ease infinite;
-      clip-path: polygon(50% 0%, 80% 20%, 100% 50%, 75% 90%, 25% 90%, 0% 50%, 20% 20%);
-    }
-    @keyframes rainbowGlow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    .stone-tektite { background: radial-gradient(circle at 30% 30%, #818cf8, #090d16); box-shadow: 0 0 6px #6366f1; }
+    case 'crystal': // 尖銳水晶柱
+      ctx.moveTo(0, -radius * 1.3);
+      ctx.lineTo(radius * 0.7, -radius * 0.4);
+      ctx.lineTo(radius * 0.6, radius);
+      ctx.lineTo(-radius * 0.6, radius);
+      ctx.lineTo(-radius * 0.7, -radius * 0.4);
+      break;
 
-    /* 罐子造型 */
-    .jar-classic { border: 4px solid rgba(51, 65, 85, 0.8); background: rgba(255, 255, 255, 0.6); border-radius: 0 0 1.5rem 1.5rem; }
-    .jar-chubby { border: 4px solid rgba(71, 85, 105, 0.8); background: rgba(248, 250, 252, 0.7); border-radius: 0 0 3.5rem 3.5rem; }
-    .jar-wish { border: 4px solid rgba(180, 83, 9, 0.7); background: rgba(254, 243, 199, 0.4); border-radius: 0 0 1.8rem 1.8rem; }
-    .jar-night { border: 4px solid rgba(99, 102, 241, 0.8); background: rgba(15, 23, 42, 0.75); border-radius: 0 0 1.5rem 1.5rem; }
-    .jar-night .stone-item { box-shadow: 0 0 8px rgba(255, 255, 255, 0.6); }
-    .jar-crystal { border: 4px solid rgba(14, 165, 233, 0.8); background: rgba(224, 242, 254, 0.5); clip-path: polygon(10% 0%, 90% 0%, 100% 85%, 50% 100%, 0% 85%); }
-    .jar-apothecary { border: 4px solid rgba(120, 53, 15, 0.8); background: rgba(120, 53, 15, 0.25); border-radius: 0 0 1.2rem 1.2rem; }
-    .jar-tea { border: 4px solid rgba(20, 83, 45, 0.7); background: rgba(240, 253, 244, 0.65); border-radius: 0 0 2rem 2rem; }
-    .jar-royal { border: 4px solid rgba(234, 179, 8, 0.9); background: rgba(254, 252, 232, 0.6); border-radius: 0 0 1.5rem 1.5rem; box-shadow: inset 0 0 10px rgba(234, 179, 8, 0.3); }
+    case 'octahedron': // 雙錐八面體 (夜光石)
+      ctx.moveTo(0, -radius * 1.2);
+      ctx.lineTo(radius * 0.8, 0);
+      ctx.lineTo(0, radius * 1.2);
+      ctx.lineTo(-radius * 0.8, 0);
+      break;
 
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
-</head>
-<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none max-w-md mx-auto relative text-slate-800">
-
-  <header class="w-full bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 mb-3">
-    <div class="flex justify-between items-center mb-2">
-      <div>
-        <h1 class="text-base font-bold text-slate-800 tracking-wide">每日簽到罐 3.0</h1>
-        <p class="text-[10px] text-slate-400">收集大地礦石，紀錄每日成就</p>
-      </div>
-      <div class="flex gap-1.5">
-        <button onclick="exportData()" title="備份" class="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-medium px-2">📤</button>
-        <label title="還原" class="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-medium px-2 cursor-pointer">
-          📥 <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
-        </label>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-100 text-xs font-bold">
-      <button onclick="openModal('achieve-modal')" class="py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl flex flex-col items-center gap-0.5">
-        <span>🏆 圖鑑</span>
-      </button>
-      <button onclick="renderCalendar(); openModal('calendar-modal');" class="py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl flex flex-col items-center gap-0.5">
-        <span>📅 月曆</span>
-      </button>
-      <button onclick="renderCapsule(); openModal('capsule-modal');" class="py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl flex flex-col items-center gap-0.5">
-        <span>💊 膠囊</span>
-      </button>
-      <button onclick="randomThrowback()" class="py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-xl flex flex-col items-center gap-0.5">
-        <span>🔮 隨機</span>
-      </button>
-    </div>
-  </header>
-
-  <main class="w-full flex-1 flex flex-col gap-3 mb-3">
-    <div class="flex flex-col items-center gap-2 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm relative">
-      <div id="jar-container" class="relative w-56 h-56 jar-classic backdrop-blur-md shadow-inner overflow-hidden flex flex-col justify-end p-3 transition-all duration-300">
-        <div id="jar-lid" class="absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-3 bg-slate-300 rounded-full border border-slate-400/50 z-20"></div>
-        <div id="jar-content" class="w-full h-full flex flex-wrap-reverse content-start justify-center gap-1.5 overflow-y-auto pt-4 no-scrollbar"></div>
-      </div>
-
-      <div class="flex items-center justify-between w-full px-2 text-slate-600 font-medium text-xs">
-        <span id="current-jar-name" class="text-slate-400">當前主題：🥛 簡約透明罐</span>
-        <div>已累積：<span class="text-base font-black text-indigo-600" id="stone-count">0</span> 顆礦石</div>
-      </div>
-    </div>
-
-    <!-- 每日任務清單 (保持公開，不隱藏) -->
-    <div class="flex flex-col gap-2 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
-      <div class="flex justify-between items-center">
-        <h2 class="font-bold text-slate-700 text-xs">📋 今日任務清單</h2>
-        <span class="text-[10px] text-slate-400">全部勾選才能簽到</span>
-      </div>
-      
-      <div class="flex gap-2">
-        <input type="text" id="new-task-name" placeholder="新增任務..." class="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-white">
-        <button onclick="addNewCustomTask()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all">新增</button>
-      </div>
-
-      <div id="custom-task-list" class="flex flex-col gap-1.5 max-h-28 overflow-y-auto pr-1"></div>
-
-      <div class="pt-2 border-t border-slate-100 flex flex-col gap-1">
-        <label for="daily-note" class="text-[11px] font-bold text-slate-600">✍️ 今日筆記／想記錄的事（選填）：</label>
-        <input type="text" id="daily-note" placeholder="記錄心情或突破..." class="w-full px-3 py-1.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50">
-      </div>
-    </div>
-  </main>
-
-  <footer class="w-full">
-    <button id="checkin-btn" onclick="doCheckIn()" class="w-full py-3.5 bg-indigo-600 active:bg-indigo-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2">
-      <span>🪨 提交任務並放入採集礦石</span>
-    </button>
-  </footer>
-
-  <div id="modal-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div id="system-modal" class="modal-card bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl flex-col gap-3 hidden">
-      <h3 id="modal-title" class="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">系統提示</h3>
-      <div id="modal-content" class="text-sm text-slate-600 whitespace-pre-line leading-relaxed"></div>
-      <button onclick="closeModal('system-modal')" class="w-full mt-2 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl">確定</button>
-    </div>
-
-    <!-- 成就圖鑑模組（包含特殊隱藏任務成就） -->
-    <div id="achieve-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-        <h3 class="font-bold text-sm text-slate-800">🏆 成就勳章與礦石圖鑑</h3>
-        <button onclick="closeModal('achieve-modal')" class="text-slate-400 text-sm">✕</button>
-      </div>
-      <div id="achieve-list" class="flex flex-col gap-2.5"></div>
-    </div>
-
-    <div id="calendar-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-        <h3 class="font-bold text-sm text-slate-800">📅 打卡月曆熱力圖</h3>
-        <button onclick="closeModal('calendar-modal')" class="text-slate-400 text-sm">✕</button>
-      </div>
-      <div id="calendar-container" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
-    </div>
-
-    <div id="capsule-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-        <h3 class="font-bold text-sm text-slate-800">💊 月度時光膠囊</h3>
-        <button onclick="closeModal('capsule-modal')" class="text-slate-400 text-sm">✕</button>
-      </div>
-      <div id="capsule-content" class="text-xs text-slate-600 flex flex-col gap-2"></div>
-    </div>
-  </div>
-
-  <script>
-    // 現實基礎礦石清單
-    const REAL_BASIC_STONES = [
-      { name: '河床鵝卵石', cssClass: 'stone-pebble' },
-      { name: '粉晶 (芙蓉晶)', cssClass: 'stone-rose_quartz' },
-      { name: '東陵玉', cssClass: 'stone-aventurine' },
-      { name: '青金石', cssClass: 'stone-lapis' },
-      { name: '虎眼石', cssClass: 'stone-tigereye' },
-      { name: '紫水晶', cssClass: 'stone-amethyst' },
-      { name: '白水晶', cssClass: 'stone-quartz' },
-      { name: '綠松石', cssClass: 'stone-turquoise' },
-      { name: '黑曜石', cssClass: 'stone-obsidian' },
-      { name: '紅瑪瑙', cssClass: 'stone-agate' }
-    ];
-
-    // 成就主題罐 (包含特殊隱藏任務機制 isHidden)
-    const JARS = [
-      { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', isHidden: false },
-      { id: 'chubby', name: '🍯 圓滾滾胖胖瓶', class: 'jar-chubby', desc: '累積簽到 7 天解鎖。', isHidden: false },
-      { id: 'wish', name: '✨ 復古木塞許願瓶', class: 'jar-wish', desc: '累積簽到 30 天解鎖。', isHidden: false },
-      { id: 'crystal', name: '💎 典雅八角水晶瓶', class: 'jar-crystal', desc: '累積簽到 100 天解鎖。', isHidden: false },
-      // 特殊隱藏任務 (未解鎖前隱藏條件)
-      { id: 'night', name: '🌌 星空夜光玻璃瓶', class: 'jar-night', desc: '獲得 1 顆彩虹蛋白石解鎖。', isHidden: true },
-      { id: 'apothecary', name: '📜 典藏復古藥劑瓶', class: 'jar-apothecary', desc: '深夜 (23:00~02:00) 簽到解鎖。', isHidden: true },
-      { id: 'tea', name: '🍵 陶瓷茶葉罐', class: 'jar-tea', desc: '寫下 30 次心情筆記解鎖。', isHidden: true },
-      { id: 'royal', name: '👑 尊爵金邊聖誕瓶', class: 'jar-royal', desc: '單月完全無漏簽解鎖。', isHidden: true }
-    ];
-
-    let state = {
-      count: 0,
-      lastDate: "",
-      currentJar: 'classic',
-      unlockedJars: ['classic'],
-      unlockedAchs: [],
-      stones: [],
-      customTasks: [
-        { id: 1, name: "閱讀 30 分鐘", done: false }
-      ]
-    };
-
-    function init() {
-      let saved = localStorage.getItem('daily_jar_data_v3');
-      if (saved) {
-        try { state = JSON.parse(saved); } catch(e){}
-      }
-
-      // === 修復機制：為舊版本沒有名稱/樣式的石頭進行 Data Migration ===
-      if (state.stones && state.stones.length > 0) {
-        let needsSave = false;
-        state.stones.forEach(stone => {
-          if (!stone.cssClass || stone.cssClass === 'stone-pebble') {
-            // 自動修復：賦予多樣化隨機礦石，避免全變成鵝卵石
-            const basic = REAL_BASIC_STONES[Math.floor(Math.random() * REAL_BASIC_STONES.length)];
-            stone.name = stone.name && stone.name !== '礦石' ? stone.name : basic.name;
-            stone.cssClass = basic.cssClass;
-            needsSave = true;
-          }
-        });
-        if (needsSave) saveData();
-      }
-
-      const today = new Date().toLocaleDateString();
-      if (state.lastResetDate !== today) {
-        if (state.customTasks) state.customTasks.forEach(t => t.done = false);
-        state.lastResetDate = today;
-        saveData();
-      }
-
-      applyJarTheme(state.currentJar || 'classic');
-      renderStones();
-      renderCustomTasks();
-      checkTodayStatus();
-      initShakeDetector();
-      checkAchievements(new Date().getHours(), true);
-    }
-
-    function initShakeDetector() {
-      let lastX, lastY, lastZ;
-      let lastTime = 0;
-      window.addEventListener('devicemotion', (e) => {
-        const current = e.accelerationIncludingGravity;
-        if (!current) return;
-        const now = Date.now();
-        if ((now - lastTime) > 100) {
-          const diffTime = now - lastTime;
-          lastTime = now;
-          if (lastX !== undefined) {
-            const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
-            if (speed > 1200) {
-              const jar = document.getElementById('jar-container');
-              jar.classList.add('shake-jar');
-              setTimeout(() => jar.classList.remove('shake-jar'), 500);
-            }
-          }
-          lastX = current.x; lastY = current.y; lastZ = current.z;
-        }
+    case 'nugget': // 不規則狗頭金塊
+      const pts = [
+        [0, -1], [0.8, -0.7], [1.1, 0.1], 
+        [0.6, 0.9], [-0.4, 1.0], [-1.0, 0.3], [-0.7, -0.8]
+      ];
+      pts.forEach(([px, py], i) => {
+        const rx = px * radius, ry = py * radius;
+        if (i === 0) ctx.moveTo(rx, ry);
+        else ctx.lineTo(rx, ry);
       });
-    }
+      break;
 
-    function applyJarTheme(jarId) {
-      const jar = document.getElementById('jar-container');
-      JARS.forEach(j => jar.classList.remove(j.class));
-      const target = JARS.find(j => j.id === jarId) || JARS[0];
-      jar.classList.add(target.class);
-      state.currentJar = jarId;
-      document.getElementById('current-jar-name').innerText = `當前主題：${target.name}`;
-      saveData();
-    }
-
-    function doCheckIn() {
-      const today = new Date().toLocaleDateString();
-      if (state.lastDate === today) return;
-
-      const hasUnfinished = state.customTasks.some(t => !t.done);
-      if (state.customTasks.length > 0 && hasUnfinished) {
-        showSystemModal('⚠️ 請先完成並勾選今日的所有任務，才能放入採集礦石喔！');
-        return;
+    case 'star': // 五角星
+      for (let i = 0; i < 10; i++) {
+        const r = (i % 2 === 0) ? radius * 1.1 : radius * 0.5;
+        const angle = (i * Math.PI) / 5 - Math.PI / 2;
+        ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
       }
+      break;
 
-      const noteInput = document.getElementById('daily-note');
-      const userNote = noteInput ? noteInput.value.trim() : "";
-      const nowHour = new Date().getHours();
+    case 'teardrop': // 水滴 / 勾玉形
+      ctx.moveTo(0, -radius * 1.2);
+      ctx.bezierCurveTo(radius * 1.2, -radius * 0.2, radius * 0.8, radius, 0, radius);
+      ctx.bezierCurveTo(-radius * 0.8, radius, -radius * 1.2, -radius * 0.2, 0, -radius * 1.2);
+      break;
 
-      // 計算獲得哪種現實礦石
-      let pickedStone = {};
-      const isRareOpal = Math.random() < 0.03; // 3% 幸運彩虹蛋白石
-      const isLateNight = (nowHour >= 23 || nowHour < 2);
-      const isNightTektiteChance = isLateNight && (Math.random() < 0.5); // 深夜改為「50% 機率」獲得隕石
-
-      if (isRareOpal) {
-        pickedStone = { name: '🌈 彩虹蛋白石', cssClass: 'stone-opal', isRare: true };
-      } else if (isNightTektiteChance) {
-        pickedStone = { name: '🌌 深夜黑玻璃隕石', cssClass: 'stone-tektite', isRare: true };
-      } else {
-        const basic = REAL_BASIC_STONES[Math.floor(Math.random() * REAL_BASIC_STONES.length)];
-        pickedStone = { name: basic.name, cssClass: basic.cssClass, isRare: false };
+    case 'snowflake': // 六角雪花
+      for (let i = 0; i < 6; i++) {
+        const angle = (i * Math.PI) / 3;
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
       }
+      ctx.strokeStyle = stoneConfig.color;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+      return;
 
-      let randomRotate = Math.floor(Math.random() * 30) - 15;
-      let randomMarginX = Math.floor(Math.random() * 6) - 3;
-
-      state.count += 1;
-      state.lastDate = today;
-      state.stones.push({
-        date: today,
-        timestamp: Date.now(),
-        note: userNote,
-        name: pickedStone.name,
-        cssClass: pickedStone.cssClass,
-        rotate: randomRotate,
-        marginX: randomMarginX,
-        isRare: pickedStone.isRare
-      });
-
-      checkAchievements(nowHour);
-      saveData();
-      renderStones(true);
-      checkTodayStatus();
-
-      if (pickedStone.isRare) {
-        setTimeout(() => showSystemModal(`🎉 恭喜你！幸運採集到了稀有奇石【${pickedStone.name}】！`), 600);
+    case 'heptagon': // 正七邊形
+    default:
+      for (let i = 0; i < 7; i++) {
+        const angle = (i * 2 * Math.PI) / 7;
+        ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
       }
+      break;
+  }
+
+  ctx.closePath();
+  ctx.fill();
+
+  // 高光細節 (增添立體感)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.beginPath();
+  ctx.arc(-radius * 0.2, -radius * 0.3, radius * 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ==========================================
+// 3. 成就判定邏輯
+// ==========================================
+function checkAndGrantAchievements(userProgress, checkInDate = new Date()) {
+  const newAchievements = [];
+  const hours = checkInDate.getHours();
+  const month = checkInDate.getMonth() + 1;
+  const date = checkInDate.getDate();
+
+  // 1. 連續簽到 7 天
+  if (userProgress.streakDays >= 7 && !userProgress.unlockedAchievements.includes('ACH_7_DAYS')) {
+    newAchievements.push({ id: 'ACH_7_DAYS', rewardStone: STONES.CHRONO_METEOR });
+  }
+
+  // 2. 累計簽到 30 天
+  if (userProgress.totalDays >= 30 && !userProgress.unlockedAchievements.includes('ACH_30_DAYS')) {
+    newAchievements.push({ id: 'ACH_30_DAYS', rewardStone: STONES.GOLD_NUGGET });
+  }
+
+  // 3. 深夜簽到 (23:00~02:00) 滿 5 次
+  const isNight = (hours >= 23 || hours < 2);
+  if (isNight) {
+    userProgress.nightCount = (userProgress.nightCount || 0) + 1;
+    if (userProgress.nightCount >= 5 && !userProgress.unlockedAchievements.includes('ACH_NIGHT_5')) {
+      newAchievements.push({ id: 'ACH_NIGHT_5', rewardStone: STONES.FLUORITE });
     }
+  }
 
-    function checkAchievements(hour, silent = false) {
-      const notesCount = state.stones.filter(s => s.note && s.note.length > 0).length;
-      const hasStar = state.stones.some(s => s.cssClass === 'stone-opal');
-      const hasTektite = state.stones.some(s => s.cssClass === 'stone-tektite');
+  // 4. 特定日期簽到：1/1 元旦
+  if (month === 1 && date === 1 && !userProgress.unlockedAchievements.includes('ACH_NEW_YEAR')) {
+    newAchievements.push({ id: 'ACH_NEW_YEAR', rewardStone: STONES.NEW_YEAR_STAR });
+  }
 
-      let newlyUnlocked = [];
+  // 5. 特定日期簽到：12/25 聖誕節
+  if (month === 12 && date === 25 && !userProgress.unlockedAchievements.includes('ACH_XMAS')) {
+    newAchievements.push({ id: 'ACH_XMAS', rewardStone: STONES.XMAS_CRYSTAL });
+  }
 
-      function unlock(achId, jarId) {
-        if (!state.unlockedAchs.includes(achId)) {
-          state.unlockedAchs.push(achId);
-          if (jarId && !state.unlockedJars.includes(jarId)) {
-            state.unlockedJars.push(jarId);
-            const jarObj = JARS.find(j => j.id === jarId);
-            newlyUnlocked.push(jarObj.name);
-          }
-        }
-      }
+  return { newAchievements, isNight };
+}
 
-      if (state.count >= 7) unlock('a7', 'chubby');
-      if (state.count >= 30) unlock('a30', 'wish');
-      if (state.count >= 100) unlock('a100', 'crystal');
-      if (hasStar) unlock('aStar', 'night');
-      if (hasTektite || (hour >= 23 || hour < 2)) unlock('aNight', 'apothecary');
-      if (notesCount >= 30) unlock('aNotes', 'tea');
+// ==========================================
+// 4. 簽到抽獎與石頭獲得邏輯
+// ==========================================
+function getDailyStone(userProgress, checkInDate = new Date()) {
+  const month = checkInDate.getMonth() + 1;
+  const date = checkInDate.getDate();
+  const hours = checkInDate.getHours();
+  const isNight = (hours >= 23 || hours < 2);
 
-      saveData();
+  // A. 優先規則：特定節日當天簽到 100% 必得節日石
+  if (month === 1 && date === 1) return STONES.NEW_YEAR_STAR;
+  if (month === 12 && date === 25) return STONES.XMAS_CRYSTAL;
 
-      if (!silent && newlyUnlocked.length > 0) {
-        setTimeout(() => {
-          showSystemModal(`🎉 恭喜觸發隱藏條件，解鎖新成就主題瓶：\n${newlyUnlocked.join('、')}`);
-        }, 800);
-      }
+  // B. 幸運觸發：無條件彩虹蛋白石 (3%)
+  if (Math.random() < 0.03) return STONES.OPAL;
+
+  // C. 深夜時段條件觸發
+  if (isNight) {
+    // 已解鎖夜貓子成就，25% 獲得夜光螢石
+    if (userProgress.unlockedAchievements.includes('ACH_NIGHT_5') && Math.random() < 0.25) {
+      return STONES.FLUORITE;
     }
-
-    function renderStones(animateLast = false) {
-      const container = document.getElementById('jar-content');
-      document.getElementById('stone-count').innerText = state.count;
-      container.innerHTML = '';
-
-      state.stones.forEach((stone, index) => {
-        const el = document.createElement('div');
-        const stoneClass = stone.cssClass || 'stone-pebble';
-        el.className = `stone-item ${stoneClass}`;
-
-        el.style.transform = `rotate(${stone.rotate || 0}deg)`;
-        el.style.marginLeft = `${stone.marginX || 0}px`;
-        el.style.marginRight = `${stone.marginX || 0}px`;
-
-        el.onclick = () => {
-          const rareTag = stone.isRare ? '✨【稀有奇石】\n' : '';
-          const stoneName = stone.name ? `🪨 礦石種類：${stone.name}\n` : '';
-          const noteText = stone.note ? `📝 紀錄：${stone.note}` : '📝 紀錄：無';
-          showSystemModal(`${rareTag}${stoneName}🗓️ 簽到日期：${stone.date || '早期紀錄'}\n${noteText}`);
-        };
-
-        if (animateLast && index === state.stones.length - 1) el.classList.add('animate-drop');
-        container.appendChild(el);
-      });
+    // 深夜 50% 機率獲得黑玻璃隕石
+    if (Math.random() < 0.50) {
+      return STONES.METEORITE;
     }
+  }
 
-    function randomThrowback() {
-      const noteStones = state.stones.filter(s => s.note && s.note.trim() !== "");
-      if (noteStones.length === 0) {
-        showSystemModal('📜 目前還沒有包含筆記的採集紀錄喔！試著在簽到時寫下一點心思吧。');
-        return;
-      }
-      const picked = noteStones[Math.floor(Math.random() * noteStones.length)];
-      showSystemModal(`🔮【穿越時光的回憶】\n\n🪨 當次採集：${picked.name || '礦石'}\n🗓️ 簽到日期：${picked.date}\n✍️ 當時的你寫下了：\n「${picked.note}」`);
-    }
+  // D. 依已解鎖成就擴充動態掉落池
+  let dynamicPool = [
+    STONES.RIVER_PEBBLE,
+    STONES.ROSE_QUARTZ,
+    STONES.AMETHYST
+  ];
 
-    function renderCalendar() {
-      const grid = document.getElementById('calendar-container');
-      grid.innerHTML = '';
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const firstDay = new Date(year, month, 1).getDay();
-      const totalDays = new Date(year, month + 1, 0).getDate();
+  // 若已解鎖【積少成多】(30天)，5% 機率掉落黃金狗頭金
+  if (userProgress.unlockedAchievements.includes('ACH_30_DAYS') && Math.random() < 0.05) {
+    return STONES.GOLD_NUGGET;
+  }
 
-      const weekHeaders = ['日', '一', '二', '三', '四', '五', '六'];
-      weekHeaders.forEach(h => grid.innerHTML += `<div class="font-bold text-slate-400 py-1">${h}</div>`);
+  // 若已解鎖【持之以恆】(7天)，8% 機率掉落時空隕石
+  if (userProgress.unlockedAchievements.includes('ACH_7_DAYS') && Math.random() < 0.08) {
+    return STONES.CHRONO_METEOR;
+  }
 
-      for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-
-      for (let day = 1; day <= totalDays; day++) {
-        const dateStr = `${year}/${month + 1}/${day}`;
-        const hasCheckIn = state.stones.some(s => s.date && new Date(s.date).toLocaleDateString() === new Date(dateStr).toLocaleDateString());
-        grid.innerHTML += `
-          <div class="py-2 rounded-lg font-medium ${hasCheckIn ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-slate-50 text-slate-400'}">
-            ${day}
-          </div>
-        `;
-      }
-    }
-
-    function renderCapsule() {
-      const container = document.getElementById('capsule-content');
-      if (state.stones.length === 0) {
-        container.innerHTML = '<p class="text-center py-4 text-slate-400">時光膠囊空空的，快去採集第一顆礦石吧！</p>';
-        return;
-      }
-      const noteStones = state.stones.filter(s => s.note);
-      container.innerHTML = `
-        <div class="bg-indigo-50 p-3 rounded-xl mb-2">
-          <p class="font-bold text-indigo-900">📊 歷史總計：</p>
-          <p>總累積礦石：<b>${state.count}</b> 顆</p>
-          <p>寫下紀錄的心情筆記：<b>${noteStones.length}</b> 篇</p>
-        </div>
-        <div class="font-bold text-slate-700 mt-2 mb-1">📜 你的生活點滴回顧：</div>
-        <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
-          ${noteStones.map(s => `
-            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] text-indigo-500 font-bold">${s.date}</span>
-                <span class="text-[10px] text-slate-400 font-medium">${s.name || '礦石'}</span>
-              </div>
-              <p class="text-xs text-slate-700 mt-0.5">${s.note}</p>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    // 渲染成就圖鑑：包含隱藏特殊任務判斷
-    function renderAchievements() {
-      const list = document.getElementById('achieve-list');
-      list.innerHTML = '';
-      JARS.forEach(j => {
-        const isUnlocked = state.unlockedJars.includes(j.id);
-        const isCurrent = state.currentJar === j.id;
-
-        // 特殊任務隱藏邏輯：若為隱藏任務且未解鎖，顯示為神秘狀態
-        const displayName = (j.isHidden && !isUnlocked) ? '❓❓❓ 隱藏主題' : j.name;
-        const displayDesc = (j.isHidden && !isUnlocked) ? '🔒 達成特定隱藏條件後解鎖...' : j.desc;
-
-        list.innerHTML += `
-          <div class="p-3 rounded-xl border ${isUnlocked ? 'bg-white border-indigo-200' : 'bg-slate-50 border-slate-200 opacity-60'} flex justify-between items-center">
-            <div>
-              <div class="font-bold text-xs ${isUnlocked ? 'text-indigo-900' : 'text-slate-500'}">${displayName} ${isUnlocked ? '✅' : '🔒'}</div>
-              <div class="text-[10px] text-slate-400">${displayDesc}</div>
-            </div>
-            ${isUnlocked ? `
-              <button onclick="applyJarTheme('${j.id}'); closeModal('achieve-modal');" class="px-2.5 py-1 text-xs rounded-lg font-bold ${isCurrent ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white'}">
-                ${isCurrent ? '套用中' : '使用'}
-              </button>
-            ` : ''}
-          </div>
-        `;
-      });
-    }
-
-    function openModal(id) {
-      document.getElementById('modal-overlay').classList.remove('hidden');
-      document.querySelectorAll('.modal-card').forEach(m => m.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-      document.getElementById(id).classList.add('flex');
-      if (id === 'achieve-modal') renderAchievements();
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-      document.getElementById('modal-overlay').classList.add('hidden');
-    }
-
-    function showSystemModal(msg) {
-      document.getElementById('modal-content').innerText = msg;
-      openModal('system-modal');
-    }
-
-    function addNewCustomTask() {
-      const input = document.getElementById('new-task-name');
-      const name = input.value.trim();
-      if (!name) return;
-      state.customTasks.push({ id: Date.now(), name: name, done: false });
-      input.value = '';
-      saveData();
-      renderCustomTasks();
-    }
-
-    function toggleTaskDone(id) {
-      const task = state.customTasks.find(t => t.id === id);
-      if (task) {
-        task.done = !task.done;
-        saveData();
-        renderCustomTasks();
-      }
-    }
-
-    function deleteCustomTask(id) {
-      state.customTasks = state.customTasks.filter(t => t.id !== id);
-      saveData();
-      renderCustomTasks();
-    }
-
-    function renderCustomTasks() {
-      const container = document.getElementById('custom-task-list');
-      container.innerHTML = '';
-      if (state.customTasks.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">目前無任務，在上方新增一個吧！</p>';
-        return;
-      }
-      state.customTasks.forEach(task => {
-        const item = document.createElement('div');
-        item.className = `flex items-center justify-between p-1.5 rounded-xl border transition-all ${task.done ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
-        item.innerHTML = `
-          <label class="flex items-center gap-2 flex-1 cursor-pointer">
-            <input type="checkbox" ${task.done ? 'checked' : ''} onclick="toggleTaskDone(${task.id})" class="w-3.5 h-3.5 text-indigo-600 rounded">
-            <span class="text-xs font-medium ${task.done ? 'line-through opacity-75' : ''}">${task.name}</span>
-          </label>
-          <button onclick="deleteCustomTask(${task.id})" class="text-slate-400 hover:text-red-500 px-1 text-xs">🗑️</button>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function checkTodayStatus() {
-      const today = new Date().toLocaleDateString();
-      const btn = document.getElementById('checkin-btn');
-      const noteInput = document.getElementById('daily-note');
-      if (state.lastDate === today) {
-        btn.disabled = true;
-        btn.classList.replace('bg-indigo-600', 'bg-slate-300');
-        btn.innerHTML = '<span>✅ 今日已完成簽到與礦石採集</span>';
-        if (noteInput) noteInput.disabled = true;
-      }
-    }
-
-    function saveData() { localStorage.setItem('daily_jar_data_v3', JSON.stringify(state)); }
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-      const a = document.createElement('a'); a.href = dataStr; a.download = `daily_jar_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
-    }
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          state = JSON.parse(e.target.result);
-          saveData(); init(); showSystemModal('資料還原成功！');
-        } catch (err) { showSystemModal('檔案格式錯誤！'); }
-      };
-      reader.readAsText(file);
-    }
-
-    window.onload = init;
-  </script>
-</body>
-</html>
+  // E. 預設：從基礎池隨機抽取
+  const randomIndex = Math.floor(Math.random() * dynamicPool.length);
+  return dynamicPool[randomIndex];
+}
