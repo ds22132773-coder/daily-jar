@@ -26,16 +26,17 @@
 100% { transform: rotate(0deg) translateX(0); }
 }
 .shake-jar { animation: shakeJiggle 0.5s ease-in-out; }
-/* 6 種以上極致光滑、有機圓潤的隨機石頭形狀（類型與形狀完全獨立） */
-.stone-shape-1 { border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%; } /* 經典水滴卵石 */
-.stone-shape-2 { border-radius: 35% 65% 55% 45% / 50% 40% 60% 50%; } /* 不規則有機軟石 */
-.stone-shape-3 { border-radius: 60% / 40%; }                          /* 扁平水漂石 */
-.stone-shape-4 { border-radius: 45% 55% 48% 52% / 52% 45% 55% 48%; } /* 飽滿圓心石 */
-.stone-shape-5 { border-radius: 40% 60% 60% 40% / 55% 45% 55% 45%; } /* 溫潤豆莢石 */
-.stone-shape-6 { border-radius: 50% 40% 55% 45% / 45% 55% 40% 60%; } /* 雲朵澎澎石 */
-.stone-shape-7 { border-radius: 50%; }                               /* 完美圓潤珠寶石 */
 
-/* 柔和圓潤的星形剪影（使用 polygon 搭配平滑視覺感） */
+/* 7 種截然不同、輪廓分明的有機石頭剪影（完全獨立於種類） */
+.stone-shape-1 { clip-path: polygon(50% 0%, 90% 25%, 85% 85%, 50% 100%, 15% 85%, 10% 25%); border-radius: 35%; } /* 飽滿水滴卵石 */
+.stone-shape-2 { clip-path: polygon(30% 10%, 80% 20%, 95% 70%, 60% 95%, 15% 80%, 5% 40%); border-radius: 40%; } /* 不規則有機軟石 */
+.stone-shape-3 { clip-path: polygon(10% 30%, 90% 10%, 100% 70%, 80% 90%, 20% 95%, 0% 60%); border-radius: 50% / 30%; } /* 扁平長形水漂石 */
+.stone-shape-4 { clip-path: polygon(50% 5%, 95% 45%, 75% 95%, 25% 95%, 5% 45%); border-radius: 30%; }     /* 菱角圓潤晶石 */
+.stone-shape-5 { clip-path: polygon(20% 20%, 80% 10%, 95% 60%, 70% 95%, 30% 90%, 5% 50%); border-radius: 45%; } /* 飽滿豐厚豆莢石 */
+.stone-shape-6 { clip-path: polygon(35% 10%, 75% 15%, 95% 50%, 85% 85%, 45% 95%, 15% 80%, 5% 40%); border-radius: 50%; } /* 雲朵澎澎石 */
+.stone-shape-7 { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); border-radius: 35%; }            /* 柔和鑽石寶石 */
+
+/* 柔和圓潤的流光星形（彩虹星專屬） */
 .stone-shape-star {
   clip-path: polygon(50% 0%, 63% 35%, 100% 38%, 71% 62%, 82% 100%, 50% 78%, 18% 100%, 29% 62%, 0% 38%, 37% 35%);
   border-radius: 25% !important;
@@ -561,9 +562,8 @@ const file = event.target.files[0];
 if (!file) return;
 const reader = new FileReader();
 reader.onload = function(e) {
-joinData = e.target.result;
 try {
-state = JSON.parse(joinData);
+state = JSON.parse(e.target.result);
 saveData(); init(); showSystemModal('資料還原成功！');
 } catch (err) { showSystemModal('檔案格式錯誤！'); }
 };
