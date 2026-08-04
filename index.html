@@ -1,384 +1,542 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每日簽到罐 3.0 - 奇石典藏版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes dropIn {
-            0% { transform: translateY(-300px) scale(0.5) rotate(0deg); opacity: 0; }
-            60% { transform: translateY(10px) scale(1.1) rotate(180deg); opacity: 1; }
-            80% { transform: translateY(-5px) scale(0.95) rotate(220deg); }
-            100% { transform: translateY(0) scale(1) rotate(var(--final-rot, 0deg)); opacity: 1; }
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
+  <title>每日簽到罐 3.0</title>
+  
+  <link rel="icon" href="./icon.png">
+  <link rel="apple-touch-icon" href="./icon.png">
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuaWueWPo+eUn+iXhuW3rCIsCiAgInNob3J0X25hbWUiOiAi5Lnv5oee5qGIIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICI0ZjQ2ZTUiCn0=">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    @keyframes dropIn {
+      0% { transform: translateY(-180px) scale(0.6) rotate(-10deg); opacity: 0; }
+      70% { transform: translateY(10px) scale(1.05) rotate(5deg); opacity: 1; }
+      100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+    }
+    .animate-drop { animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    
+    @keyframes shakeJiggle {
+      0% { transform: rotate(0deg) translateX(0); }
+      25% { transform: rotate(-4deg) translateX(-3px); }
+      50% { transform: rotate(4deg) translateX(3px); }
+      75% { transform: rotate(-2deg) translateX(-1px); }
+      100% { transform: rotate(0deg) translateX(0); }
+    }
+    .shake-jar { animation: shakeJiggle 0.5s ease-in-out; }
 
-        .stone-drop {
-            animation: dropIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
+    .star-stone {
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      background: linear-gradient(45deg, #ff007f, #ff7f00, #ffee00, #00ff7f, #00bfff, #8b00ff);
+      background-size: 300% 300%;
+      animation: rainbowGlow 3s ease infinite;
+    }
+    @keyframes rainbowGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
-        /* 石頭形狀裁切定義 */
-        .shape-pebble { clip-path: polygon(30% 0%, 70% 10%, 100% 35%, 90% 75%, 65% 100%, 20% 90%, 0% 60%, 10% 25%); }
-        .shape-crystal { clip-path: polygon(50% 0%, 90% 20%, 100% 70%, 50% 100%, 0% 70%, 10% 20%); }
-        .shape-raw { clip-path: polygon(20% 0%, 80% 10%, 100% 50%, 70% 95%, 15% 85%, 0% 40%); }
-        .shape-star { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
-        .shape-heart { clip-path: polygon(50% 15%, 65% 0%, 85% 0%, 100% 20%, 100% 45%, 50% 95%, 0% 45%, 0% 20%, 15% 0%, 35% 0%); }
+    .jar-classic { border: 4px solid rgba(51, 65, 85, 0.8); background: rgba(255, 255, 255, 0.6); border-radius: 0 0 1.5rem 1.5rem; }
+    .jar-chubby { border: 4px solid rgba(71, 85, 105, 0.8); background: rgba(248, 250, 252, 0.7); border-radius: 0 0 3.5rem 3.5rem; }
+    .jar-wish { border: 4px solid rgba(180, 83, 9, 0.7); background: rgba(254, 243, 199, 0.4); border-radius: 0 0 1.8rem 1.8rem; }
+    .jar-night { border: 4px solid rgba(99, 102, 241, 0.8); background: rgba(15, 23, 42, 0.75); border-radius: 0 0 1.5rem 1.5rem; }
+    .jar-night .stone-item { box-shadow: 0 0 8px rgba(255, 255, 255, 0.6); }
+    .jar-crystal { border: 4px solid rgba(14, 165, 233, 0.8); background: rgba(224, 242, 254, 0.5); clip-path: polygon(10% 0%, 90% 0%, 100% 85%, 50% 100%, 0% 85%); }
+    .jar-apothecary { border: 4px solid rgba(120, 53, 15, 0.8); background: rgba(120, 53, 15, 0.25); border-radius: 0 0 1.2rem 1.2rem; }
+    .jar-tea { border: 4px solid rgba(20, 83, 45, 0.7); background: rgba(240, 253, 244, 0.65); border-radius: 0 0 2rem 2rem; }
+    .jar-royal { border: 4px solid rgba(234, 179, 8, 0.9); background: rgba(254, 252, 232, 0.6); border-radius: 0 0 1.5rem 1.5rem; box-shadow: inset 0 0 10px rgba(234, 179, 8, 0.3); }
 
-        /* 彩虹流光特效 */
-        @keyframes rainbowGlow {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-        .rainbow-stone {
-            background: linear-gradient(135deg, #f43f5e, #fb923c, #facc15, #4ade80, #38bdf8, #c084fc);
-            animation: rainbowGlow 3s linear infinite;
-        }
-
-        .jar-container {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(8px);
-            border: 4px solid rgba(255, 255, 255, 0.6);
-            border-top: none;
-            border-radius: 0 0 40px 40px;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1), inset 0 0 15px rgba(255,255,255,0.5);
-        }
-
-        .jar-lid {
-            background: #d1d5db;
-            height: 16px;
-            border-radius: 8px 8px 0 0;
-            margin: 0 auto;
-            width: 70%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            20% { transform: rotate(-3deg); }
-            40% { transform: rotate(3deg); }
-            60% { transform: rotate(-2deg); }
-            80% { transform: rotate(2deg); }
-        }
-        .shake-jar { animation: shake 0.5s ease-in-out; }
-    </style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans pb-12">
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none max-w-md mx-auto relative text-slate-800">
 
-    <!-- 頂部導覽列 -->
-    <header class="max-w-md mx-auto p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold tracking-wide text-slate-700">💎 奇石簽到罐</h1>
-        <div class="flex gap-2">
-            <button onclick="openModal('achieve')" class="px-3 py-1.5 bg-white shadow-sm rounded-xl text-xs font-semibold hover:bg-slate-50 transition">🏆 圖鑑</button>
-            <button onclick="openModal('history')" class="px-3 py-1.5 bg-white shadow-sm rounded-xl text-xs font-semibold hover:bg-slate-50 transition">📅 紀錄</button>
-        </div>
-    </header>
-
-    <main class="max-w-md mx-auto px-4 space-y-6">
-
-        <!-- 罐子主體區塊 -->
-        <div class="bg-white/80 backdrop-blur rounded-3xl p-6 shadow-xl border border-white/60 relative text-center">
-            <div id="jarLid" class="jar-lid mb-1"></div>
-            <div id="jar" class="jar-container h-72 w-full flex flex-wrap-reverse content-start p-4 gap-1.5 overflow-y-auto">
-                <!-- 石頭會落在此處 -->
-            </div>
-            
-            <p id="counterText" class="mt-4 text-xs font-medium text-slate-500">罐子裡已有 <span id="stoneCount" class="text-slate-800 font-bold">0</span> 顆奇石</p>
-        </div>
-
-        <!-- 每日任務區塊 -->
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-sm font-bold text-slate-700">📋 今日待辦任務</h2>
-                <button onclick="addTask()" class="text-xs text-indigo-600 font-semibold hover:underline">+ 新增任務</button>
-            </div>
-            <div id="taskList" class="space-y-2 mb-4">
-                <!-- 任務清單渲染處 -->
-            </div>
-
-            <!-- 心情與簽到按鈕 -->
-            <input type="text" id="dailyNote" placeholder="寫下一句今日心得..." class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 mb-3 focus:outline-none focus:border-indigo-400">
-            
-            <button id="checkInBtn" onclick="handleCheckIn()" class="w-full py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md hover:bg-indigo-700 active:scale-95 transition">
-                完成任務並放入奇石 🪨
-            </button>
-        </div>
-
-    </main>
-
-    <!-- 通用 Modal 彈窗 -->
-    <div id="modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center">
-                <h3 id="modalTitle" class="font-bold text-slate-800">標題</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-            <div id="modalBody" class="overflow-y-auto flex-1 text-xs space-y-2">
-                <!-- 彈窗內容 -->
-            </div>
-        </div>
+  <header class="w-full bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 mb-3">
+    <div class="flex justify-between items-center mb-2">
+      <div>
+        <h1 class="text-base font-bold text-slate-800 tracking-wide">每日簽到罐 3.0</h1>
+        <p class="text-[10px] text-slate-400">累積小成就，遇見更好的自己</p>
+      </div>
+      <div class="flex gap-1.5">
+        <button onclick="exportData()" title="備份" class="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-medium px-2">📤</button>
+        <label title="還原" class="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-medium px-2 cursor-pointer">
+          📥 <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+        </label>
+      </div>
     </div>
 
-    <script>
-        // --- 1. 石頭資料庫定義 ---
-        const STONES = {
-            // 初始 10 種真實奇石
-            base: [
-                { name: "鵝卵石", color: "#d1d5db", glow: "transparent", shape: "shape-pebble" },
-                { name: "黑曜石", color: "#1f2937", glow: "rgba(0,0,0,0.3)", shape: "shape-raw" },
-                { name: "木化石", color: "#78350f", glow: "transparent", shape: "shape-pebble" },
-                { name: "玄武岩", color: "#4b5563", glow: "transparent", shape: "shape-raw" },
-                { name: "白水晶", color: "#f3f4f6", glow: "rgba(255,255,255,0.8)", shape: "shape-crystal" },
-                { name: "紅瑪瑙", color: "#b91c1c", glow: "rgba(185,28,28,0.4)", shape: "shape-crystal" },
-                { name: "綠東陵", color: "#047857", glow: "rgba(4,120,87,0.3)", shape: "shape-pebble" },
-                { name: "黃水晶", color: "#f59e0b", glow: "rgba(245,158,11,0.4)", shape: "shape-crystal" },
-                { name: "藍紋石", color: "#1e3a8a", glow: "rgba(30,58,138,0.4)", shape: "shape-raw" },
-                { name: "粉晶",   color: "#f472b6", glow: "rgba(244,114,182,0.4)", shape: "shape-heart" }
-            ],
-            // 進階成就石
-            advanced: [
-                { id: "a7Days", name: "紫水晶", color: "#8b5cf6", glow: "rgba(139,92,246,0.6)", shape: "shape-crystal" },
-                { id: "a30Days", name: "孔雀石", color: "#065f46", glow: "rgba(6,95,70,0.5)", shape: "shape-pebble" },
-                { id: "a100Days", name: "青金石", color: "#1d4ed8", glow: "rgba(29,78,216,0.6)", shape: "shape-raw" },
-                { id: "aNight", name: "夜光螢石", color: "#10b981", glow: "rgba(16,185,129,0.8)", shape: "shape-crystal" },
-                { id: "aPerfectMonth", name: "金箔黃金石", color: "#fbbf24", glow: "rgba(251,191,36,0.9)", shape: "shape-star" }
-            ],
-            // 超稀有 3% 彩虹星石
-            rareStar: { name: "彩虹流光星石", color: "rainbow", glow: "rgba(255,255,255,0.9)", shape: "shape-star", isRare: true },
-            // 特殊節日限定石 (MM-DD 格式)
-            holiday: {
-                "01-01": { name: "赤金紅包石", color: "#dc2626", glow: "rgba(220,38,38,0.8)", shape: "shape-star" },
-                "06-08": { name: "翡翠粽香石", color: "#15803d", glow: "rgba(21,128,61,0.8)", shape: "shape-raw" },
-                "09-25": { name: "金桂月餅石", color: "#d97706", glow: "rgba(217,119,6,0.8)", shape: "shape-pebble" },
-                "12-25": { name: "雪花冰晶石", color: "#38bdf8", glow: "rgba(56,189,248,0.8)", shape: "shape-crystal" }
+    <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-100 text-xs font-bold">
+      <button onclick="openModal('achieve-modal')" class="py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl flex flex-col items-center gap-0.5">
+        <span>🏆 圖鑑</span>
+      </button>
+      <button onclick="renderCalendar(); openModal('calendar-modal');" class="py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl flex flex-col items-center gap-0.5">
+        <span>📅 月曆</span>
+      </button>
+      <button onclick="renderCapsule(); openModal('capsule-modal');" class="py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl flex flex-col items-center gap-0.5">
+        <span>💊 膠囊</span>
+      </button>
+      <button onclick="randomThrowback()" class="py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-xl flex flex-col items-center gap-0.5">
+        <span>🔮 隨機</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="w-full flex-1 flex flex-col gap-3 mb-3">
+    <div class="flex flex-col items-center gap-2 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm relative">
+      <div id="jar-container" class="relative w-56 h-56 jar-classic backdrop-blur-md shadow-inner overflow-hidden flex flex-col justify-end p-3 transition-all duration-300">
+        <div id="jar-lid" class="absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-3 bg-slate-300 rounded-full border border-slate-400/50 z-20"></div>
+        <div id="jar-content" class="w-full h-full flex flex-wrap-reverse content-start justify-center gap-1.5 overflow-y-auto pt-4 no-scrollbar"></div>
+      </div>
+
+      <div class="flex items-center justify-between w-full px-2 text-slate-600 font-medium text-xs">
+        <span id="current-jar-name" class="text-slate-400">當前主題：🥛 簡約透明罐</span>
+        <div>已累積：<span class="text-base font-black text-indigo-600" id="stone-count">0</span> 顆</div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-slate-700 text-xs">📋 今日任務清單</h2>
+        <span class="text-[10px] text-slate-400">全部勾選才能簽到</span>
+      </div>
+      
+      <div class="flex gap-2">
+        <input type="text" id="new-task-name" placeholder="新增任務..." class="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-white">
+        <button onclick="addNewCustomTask()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all">新增</button>
+      </div>
+
+      <div id="custom-task-list" class="flex flex-col gap-1.5 max-h-28 overflow-y-auto pr-1"></div>
+
+      <div class="pt-2 border-t border-slate-100 flex flex-col gap-1">
+        <label for="daily-note" class="text-[11px] font-bold text-slate-600">✍️ 今日筆記／想記錄的事（選填）：</label>
+        <input type="text" id="daily-note" placeholder="記錄心情或突破..." class="w-full px-3 py-1.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50">
+      </div>
+    </div>
+  </main>
+
+  <footer class="w-full">
+    <button id="checkin-btn" onclick="doCheckIn()" class="w-full py-3.5 bg-indigo-600 active:bg-indigo-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+      <span>🪨 提交今日任務並丟入石頭</span>
+    </button>
+  </footer>
+
+  <div id="modal-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div id="system-modal" class="modal-card bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl flex-col gap-3 hidden">
+      <h3 id="modal-title" class="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">系統提示</h3>
+      <div id="modal-content" class="text-sm text-slate-600 whitespace-pre-line leading-relaxed"></div>
+      <button onclick="closeModal('system-modal')" class="w-full mt-2 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl">確定</button>
+    </div>
+
+    <div id="achieve-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800">🏆 成就勳章與瓶子圖鑑</h3>
+        <button onclick="closeModal('achieve-modal')" class="text-slate-400 text-sm">✕</button>
+      </div>
+      <div id="achieve-list" class="flex flex-col gap-2.5"></div>
+    </div>
+
+    <div id="calendar-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800">📅 打卡月曆熱力圖</h3>
+        <button onclick="closeModal('calendar-modal')" class="text-slate-400 text-sm">✕</button>
+      </div>
+      <div id="calendar-container" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+    </div>
+
+    <div id="capsule-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800">💊 月度時光膠囊</h3>
+        <button onclick="closeModal('capsule-modal')" class="text-slate-400 text-sm">✕</button>
+      </div>
+      <div id="capsule-content" class="text-xs text-slate-600 flex flex-col gap-2"></div>
+    </div>
+  </div>
+
+  <script>
+    const COLORS = ['#ffffff', '#cbd5e1', '#64748b', '#f87171', '#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
+
+    const JARS = [
+      { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', unlocked: true },
+      { id: 'chubby', name: '🍯 圓滾滾胖胖瓶', class: 'jar-chubby', desc: '【初露鋒芒】累積簽到 7 天解鎖。', achId: 'a7' },
+      { id: 'wish', name: '✨ 復古木塞許願瓶', class: 'jar-wish', desc: '【習慣養成】累積簽到 30 天解鎖。', achId: 'a30' },
+      { id: 'night', name: '🌌 星空夜光玻璃瓶', class: 'jar-night', desc: '【天選之星】獲得 1 顆彩虹星解鎖。', achId: 'aStar' },
+      { id: 'crystal', name: '💎 典雅八角水晶瓶', class: 'jar-crystal', desc: '【百日築夢】累積簽到 100 天解鎖。', achId: 'a100' },
+      { id: 'apothecary', name: '📜 典藏復古藥劑瓶', class: 'jar-apothecary', desc: '【深夜開罐】深夜 (23:00~02:00) 簽到解鎖。', achId: 'aNight' },
+      { id: 'tea', name: '🍵 陶瓷茶葉罐', class: 'jar-tea', desc: '【真情流露】寫下 30 次筆記解鎖。', achId: 'aNotes' },
+      { id: 'royal', name: '👑 尊爵金邊聖誕瓶', class: 'jar-royal', desc: '【月度大滿貫】單月完全無漏簽解鎖。', achId: 'aGrand' }
+    ];
+
+    let state = {
+      count: 0,
+      lastDate: "",
+      currentJar: 'classic',
+      unlockedJars: ['classic'],
+      unlockedAchs: [],
+      stones: [],
+      customTasks: [
+        { id: 1, name: "雙手各拿一個壺鈴", done: false },
+        { id: 2, name: "閱讀 30 分鐘", done: false }
+      ]
+    };
+
+    function init() {
+      // 💡 自動搬移舊版本 (v2 或更早) 的紀錄
+      let saved = localStorage.getItem('daily_jar_data_v3');
+      if (!saved) {
+        const oldV2 = localStorage.getItem('daily_jar_data_v2') || localStorage.getItem('daily_jar_data');
+        if (oldV2) {
+          try {
+            const parsedOld = JSON.parse(oldV2);
+            state = { ...state, ...parsedOld };
+            // 保留舊紀錄並升級欄位
+            if (!state.unlockedJars) state.unlockedJars = ['classic'];
+            if (!state.unlockedAchs) state.unlockedAchs = [];
+            if (!state.currentJar) state.currentJar = 'classic';
+            saveData();
+          } catch(e) {}
+        }
+      } else {
+        state = JSON.parse(saved);
+      }
+
+      const today = new Date().toLocaleDateString();
+      if (state.lastResetDate !== today) {
+        if (state.customTasks) state.customTasks.forEach(t => t.done = false);
+        state.lastResetDate = today;
+        saveData();
+      }
+
+      applyJarTheme(state.currentJar || 'classic');
+      renderStones();
+      renderCustomTasks();
+      checkTodayStatus();
+      initShakeDetector();
+      
+      // 開啟時順便補算一下舊紀錄是否已符合解鎖條件
+      checkAchievements(new Date().getHours(), true);
+    }
+
+    function initShakeDetector() {
+      let lastX, lastY, lastZ;
+      let lastTime = 0;
+      window.addEventListener('devicemotion', (e) => {
+        const current = e.accelerationIncludingGravity;
+        if (!current) return;
+        const now = Date.now();
+        if ((now - lastTime) > 100) {
+          const diffTime = now - lastTime;
+          lastTime = now;
+          if (lastX !== undefined) {
+            const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+            if (speed > 1200) {
+              const jar = document.getElementById('jar-container');
+              jar.classList.add('shake-jar');
+              setTimeout(() => jar.classList.remove('shake-jar'), 500);
             }
+          }
+          lastX = current.x; lastY = current.y; lastZ = current.z;
+        }
+      });
+    }
+
+    function applyJarTheme(jarId) {
+      const jar = document.getElementById('jar-container');
+      JARS.forEach(j => jar.classList.remove(j.class));
+      const target = JARS.find(j => j.id === jarId) || JARS[0];
+      jar.classList.add(target.class);
+      state.currentJar = jarId;
+      document.getElementById('current-jar-name').innerText = `當前主題：${target.name}`;
+      saveData();
+    }
+
+    function doCheckIn() {
+      const today = new Date().toLocaleDateString();
+      if (state.lastDate === today) return;
+
+      const hasUnfinished = state.customTasks.some(t => !t.done);
+      if (state.customTasks.length > 0 && hasUnfinished) {
+        showSystemModal('⚠️ 請先完成並勾選今日的所有任務，才能丟入石頭喔！');
+        return;
+      }
+
+      const noteInput = document.getElementById('daily-note');
+      const userNote = noteInput ? noteInput.value.trim() : "";
+      const nowHour = new Date().getHours();
+
+      const isRareStar = Math.random() < 0.033;
+      let randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+      let randomRotate = Math.floor(Math.random() * 30) - 15;
+      let randomMarginX = Math.floor(Math.random() * 6) - 3;
+
+      state.count += 1;
+      state.lastDate = today;
+      state.stones.push({
+        date: today,
+        timestamp: Date.now(),
+        note: userNote,
+        color: randomColor,
+        rotate: randomRotate,
+        marginX: randomMarginX,
+        isRare: isRareStar
+      });
+
+      checkAchievements(nowHour);
+      saveData();
+      renderStones(true);
+      checkTodayStatus();
+
+      if (isRareStar) {
+        setTimeout(() => showSystemModal('🎉 恭喜你！幸運獲得了【超稀有彩虹星形石頭】⭐！'), 600);
+      }
+    }
+
+    function checkAchievements(hour, silent = false) {
+      const notesCount = state.stones.filter(s => s.note && s.note.length > 0).length;
+      const hasStar = state.stones.some(s => s.isRare || s.shape === 99);
+
+      let newlyUnlocked = [];
+
+      function unlock(achId, jarId) {
+        if (!state.unlockedAchs.includes(achId)) {
+          state.unlockedAchs.push(achId);
+          if (jarId && !state.unlockedJars.includes(jarId)) {
+            state.unlockedJars.push(jarId);
+            const jarObj = JARS.find(j => j.id === jarId);
+            newlyUnlocked.push(jarObj.name);
+          }
+        }
+      }
+
+      if (state.count >= 7) unlock('a7', 'chubby');
+      if (state.count >= 30) unlock('a30', 'wish');
+      if (state.count >= 100) unlock('a100', 'crystal');
+      if (hasStar) unlock('aStar', 'night');
+      if (hour >= 23 || hour < 2) unlock('aNight', 'apothecary');
+      if (notesCount >= 30) unlock('aNotes', 'tea');
+
+      saveData();
+
+      if (!silent && newlyUnlocked.length > 0) {
+        setTimeout(() => {
+          showSystemModal(`🎉 恭喜解鎖新成就！\n解鎖主題瓶：${newlyUnlocked.join('、')}`);
+        }, 800);
+      }
+    }
+
+    function renderStones(animateLast = false) {
+      const container = document.getElementById('jar-content');
+      document.getElementById('stone-count').innerText = state.count;
+      container.innerHTML = '';
+
+      state.stones.forEach((stone, index) => {
+        const el = document.createElement('div');
+        if (stone.isRare || stone.shape === 99) {
+          el.className = `stone-item w-8 h-8 star-stone shadow-lg flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
+        } else {
+          el.className = `stone-item w-8 h-8 rounded-full shadow-md border border-black/10 flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
+          el.style.backgroundColor = stone.color || '#ffffff';
+        }
+
+        el.style.transform = `rotate(${stone.rotate || 0}deg)`;
+        el.style.marginLeft = `${stone.marginX || 0}px`;
+        el.style.marginRight = `${stone.marginX || 0}px`;
+
+        el.onclick = () => {
+          const rare = (stone.isRare || stone.shape === 99) ? '⭐【超稀有彩虹星】\n\n' : '';
+          const noteText = stone.note ? `\n📝 紀錄：${stone.note}` : '\n📝 紀錄：無';
+          showSystemModal(`${rare}🗓️ 簽到日期：${stone.date || '早期紀錄'}${noteText}`);
         };
 
-        // --- 2. 全局狀態管理 ---
-        let state = {
-            stones: [],
-            tasks: ["完成今日運動", "閱讀 15 分鐘", "喝水 2000c.c"],
-            achievements: {},
-            lastCheckIn: null
-        };
+        if (animateLast && index === state.stones.length - 1) el.classList.add('animate-drop');
+        container.appendChild(el);
+      });
+    }
 
-        function loadData() {
-            const saved = localStorage.getItem('jar_3_data');
-            if (saved) state = JSON.parse(saved);
-            renderTasks();
-            renderJar();
-            checkTodayCheckIn();
-        }
+    function randomThrowback() {
+      const noteStones = state.stones.filter(s => s.note && s.note.trim() !== "");
+      if (noteStones.length === 0) {
+        showSystemModal('📜 目前還沒有包含筆記的石頭喔！試著在簽到時寫下一點心思吧。');
+        return;
+      }
+      const picked = noteStones[Math.floor(Math.random() * noteStones.length)];
+      showSystemModal(`🔮【穿越時光的回憶】\n\n🗓️ 簽到日期：${picked.date}\n✍️ 當時的你寫下了：\n「${picked.note}」`);
+    }
 
-        function saveData() {
-            localStorage.setItem('jar_3_data', JSON.stringify(state));
-        }
+    function renderCalendar() {
+      const grid = document.getElementById('calendar-container');
+      grid.innerHTML = '';
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const totalDays = new Date(year, month + 1, 0).getDate();
 
-        // --- 3. 核心邏輯：抽石與打卡 ---
-        function getRandomStone() {
-            const today = new Date();
-            const dateKey = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const weekHeaders = ['日', '一', '二', '三', '四', '五', '六'];
+      weekHeaders.forEach(h => grid.innerHTML += `<div class="font-bold text-slate-400 py-1">${h}</div>`);
 
-            // 1. 節日優先
-            if (STONES.holiday[dateKey]) {
-                return { ...STONES.holiday[dateKey], isHoliday: true };
-            }
+      for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
 
-            // 2. 3% 獨立機率觸發超稀有彩虹星石
-            if (Math.random() < 0.03) {
-                return STONES.rareStar;
-            }
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${year}/${month + 1}/${day}`;
+        const hasCheckIn = state.stones.some(s => s.date && new Date(s.date).toLocaleDateString() === new Date(dateStr).toLocaleDateString());
+        grid.innerHTML += `
+          <div class="py-2 rounded-lg font-medium ${hasCheckIn ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-slate-50 text-slate-400'}">
+            ${day}
+          </div>
+        `;
+      }
+    }
 
-            // 3. 基礎 + 已解鎖成就池
-            let pool = [...STONES.base];
-            STONES.advanced.forEach(stone => {
-                if (state.achievements[stone.id]) {
-                    pool.push(stone);
-                }
-            });
+    function renderCapsule() {
+      const container = document.getElementById('capsule-content');
+      if (state.stones.length === 0) {
+        container.innerHTML = '<p class="text-center py-4 text-slate-400">時光膠囊空空的，快去丟入第一顆石頭吧！</p>';
+        return;
+      }
+      const noteStones = state.stones.filter(s => s.note);
+      container.innerHTML = `
+        <div class="bg-indigo-50 p-3 rounded-xl mb-2">
+          <p class="font-bold text-indigo-900">📊 歷史總計：</p>
+          <p>總累積石頭：<b>${state.count}</b> 顆</p>
+          <p>寫下記錄的心情筆記：<b>${noteStones.length}</b> 篇</p>
+        </div>
+        <div class="font-bold text-slate-700 mt-2 mb-1">📜 你的生活點滴回顧：</div>
+        <div class="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
+          ${noteStones.map(s => `
+            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+              <span class="text-[10px] text-indigo-500 font-bold">${s.date}</span>
+              <p class="text-xs text-slate-700">${s.note}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
 
-            return pool[Math.floor(Math.random() * pool.length)];
-        }
+    function renderAchievements() {
+      const list = document.getElementById('achieve-list');
+      list.innerHTML = '';
+      JARS.forEach(j => {
+        const isUnlocked = state.unlockedJars.includes(j.id);
+        const isCurrent = state.currentJar === j.id;
+        list.innerHTML += `
+          <div class="p-3 rounded-xl border ${isUnlocked ? 'bg-white border-indigo-200' : 'bg-slate-50 border-slate-200 opacity-60'} flex justify-between items-center">
+            <div>
+              <div class="font-bold text-xs ${isUnlocked ? 'text-indigo-900' : 'text-slate-500'}">${j.name} ${isUnlocked ? '✅' : '🔒'}</div>
+              <div class="text-[10px] text-slate-400">${j.desc}</div>
+            </div>
+            ${isUnlocked ? `
+              <button onclick="applyJarTheme('${j.id}'); closeModal('achieve-modal');" class="px-2.5 py-1 text-xs rounded-lg font-bold ${isCurrent ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white'}">
+                ${isCurrent ? '套用中' : '使用'}
+              </button>
+            ` : ''}
+          </div>
+        `;
+      });
+    }
 
-        function handleCheckIn() {
-            const noteInput = document.getElementById('dailyNote');
-            const stoneData = getRandomStone();
-            const rot = Math.floor(Math.random() * 360);
+    function openModal(id) {
+      document.getElementById('modal-overlay').classList.remove('hidden');
+      document.querySelectorAll('.modal-card').forEach(m => m.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+      if (id === 'achieve-modal') renderAchievements();
+    }
 
-            const newStone = {
-                id: Date.now(),
-                date: new Date().toLocaleDateString(),
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                note: noteInput.value.trim() || "今天順利完成打卡！",
-                stone: stoneData,
-                rotation: rot
-            };
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById('modal-overlay').classList.add('hidden');
+    }
 
-            state.stones.push(newStone);
-            state.lastCheckIn = new Date().toDateString();
-            
-            checkAchievements();
-            saveData();
+    function showSystemModal(msg) {
+      document.getElementById('modal-content').innerText = msg;
+      openModal('system-modal');
+    }
 
-            noteInput.value = '';
-            renderJar();
-            checkTodayCheckIn();
-            
-            const jar = document.getElementById('jar');
-            jar.classList.add('shake-jar');
-            setTimeout(() => jar.classList.remove('shake-jar'), 500);
-        }
+    function addNewCustomTask() {
+      const input = document.getElementById('new-task-name');
+      const name = input.value.trim();
+      if (!name) return;
+      state.customTasks.push({ id: Date.now(), name: name, done: false });
+      input.value = '';
+      saveData();
+      renderCustomTasks();
+    }
 
-        // --- 4. 畫面渲染邏輯 ---
-        function renderJar() {
-            const jar = document.getElementById('jar');
-            jar.innerHTML = '';
-            
-            state.stones.forEach((item, idx) => {
-                const el = document.createElement('div');
-                const isLatest = idx === state.stones.length - 1;
-                
-                el.className = `w-7 h-7 flex-shrink-0 cursor-pointer ${item.stone.shape} ${isLatest ? 'stone-drop' : ''} ${item.stone.isRare ? 'rainbow-stone' : ''}`;
-                
-                if (!item.stone.isRare) {
-                    el.style.backgroundColor = item.stone.color;
-                }
-                
-                el.style.boxShadow = `0 0 10px ${item.stone.glow}`;
-                el.style.setProperty('--final-rot', `${item.rotation}deg`);
-                el.style.transform = `rotate(${item.rotation}deg)`;
-                
-                el.title = `${item.date} - ${item.stone.name}`;
-                el.onclick = () => showStoneDetail(item);
+    function toggleTaskDone(id) {
+      const task = state.customTasks.find(t => t.id === id);
+      if (task) {
+        task.done = !task.done;
+        saveData();
+        renderCustomTasks();
+      }
+    }
 
-                jar.appendChild(el);
-            });
+    function deleteCustomTask(id) {
+      state.customTasks = state.customTasks.filter(t => t.id !== id);
+      saveData();
+      renderCustomTasks();
+    }
 
-            document.getElementById('stoneCount').innerText = state.stones.length;
-        }
+    function renderCustomTasks() {
+      const container = document.getElementById('custom-task-list');
+      container.innerHTML = '';
+      if (state.customTasks.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">目前無任務，在上方新增一個吧！</p>';
+        return;
+      }
+      state.customTasks.forEach(task => {
+        const item = document.createElement('div');
+        item.className = `flex items-center justify-between p-1.5 rounded-xl border transition-all ${task.done ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
+        item.innerHTML = `
+          <label class="flex items-center gap-2 flex-1 cursor-pointer">
+            <input type="checkbox" ${task.done ? 'checked' : ''} onclick="toggleTaskDone(${task.id})" class="w-3.5 h-3.5 text-indigo-600 rounded">
+            <span class="text-xs font-medium ${task.done ? 'line-through opacity-75' : ''}">${task.name}</span>
+          </label>
+          <button onclick="deleteCustomTask(${task.id})" class="text-slate-400 hover:text-red-500 px-1 text-xs">🗑️</button>
+        `;
+        container.appendChild(item);
+      });
+    }
 
-        function renderTasks() {
-            const list = document.getElementById('taskList');
-            list.innerHTML = '';
-            state.tasks.forEach((task, idx) => {
-                const item = document.createElement('div');
-                item.className = "flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-100";
-                item.innerHTML = `
-                    <label class="flex items-center gap-2 cursor-pointer text-xs">
-                        <input type="checkbox" class="task-check rounded text-indigo-600 focus:ring-0">
-                        <span class="text-slate-700">${task}</span>
-                    </label>
-                    <button onclick="removeTask(${idx})" class="text-slate-300 hover:text-red-400">✕</button>
-                `;
-                list.appendChild(item);
-            });
-        }
+    function checkTodayStatus() {
+      const today = new Date().toLocaleDateString();
+      const btn = document.getElementById('checkin-btn');
+      const noteInput = document.getElementById('daily-note');
+      if (state.lastDate === today) {
+        btn.disabled = true;
+        btn.classList.replace('bg-indigo-600', 'bg-slate-300');
+        btn.innerHTML = '<span>✅ 今日已完成簽到與丟石頭</span>';
+        if (noteInput) noteInput.disabled = true;
+      }
+    }
 
-        function checkTodayCheckIn() {
-            const btn = document.getElementById('checkInBtn');
-            const isToday = state.lastCheckIn === new Date().toDateString();
-            if (isToday) {
-                btn.disabled = true;
-                btn.innerText = "今日奇石已入罐 ✨";
-                btn.className = "w-full py-3 bg-slate-300 text-slate-500 rounded-xl text-sm font-bold cursor-not-allowed";
-            }
-        }
+    function saveData() { localStorage.setItem('daily_jar_data_v3', JSON.stringify(state)); }
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+      const a = document.createElement('a'); a.href = dataStr; a.download = `daily_jar_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
+    }
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          state = JSON.parse(e.target.result);
+          saveData(); init(); showSystemModal('資料還原成功！');
+        } catch (err) { showSystemModal('檔案格式錯誤！'); }
+      };
+      reader.readAsText(file);
+    }
 
-        // --- 5. 任務管理 ---
-        function addTask() {
-            const t = prompt("請輸入新增的每日任務：");
-            if (t && t.trim()) {
-                state.tasks.push(t.trim());
-                saveData();
-                renderTasks();
-            }
-        }
-
-        function removeTask(idx) {
-            state.tasks.splice(idx, 1);
-            saveData();
-            renderTasks();
-        }
-
-        // --- 6. 成就解鎖判定 ---
-        function checkAchievements() {
-            const count = state.stones.length;
-            const hour = new Date().getHours();
-
-            if (count >= 7) state.achievements['a7Days'] = true;
-            if (count >= 30) state.achievements['a30Days'] = true;
-            if (count >= 100) state.achievements['a100Days'] = true;
-            if (hour >= 23 || hour < 2) state.achievements['aNight'] = true;
-        }
-
-        // --- 7. Modal 彈窗介面 ---
-        function openModal(type) {
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modalTitle');
-            const body = document.getElementById('modalBody');
-
-            if (type === 'achieve') {
-                title.innerText = "🏆 石頭圖鑑與成就";
-                body.innerHTML = `
-                    <p class="text-slate-500 mb-2">解鎖條件與限定奇石：</p>
-                    <div class="space-y-2">
-                        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <div class="w-5 h-5 shape-star rainbow-stone"></div>
-                                <span class="font-bold text-amber-800">彩虹流光星石</span>
-                            </div>
-                            <span class="text-amber-600 font-semibold">3% 超稀有掉落</span>
-                        </div>
-                        ${STONES.advanced.map(s => `
-                            <div class="p-2.5 rounded-xl border ${state.achievements[s.id] ? 'bg-indigo-50/50 border-indigo-200' : 'bg-slate-50 border-slate-100 opacity-60'} flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 ${s.shape}" style="background-color:${s.color}"></div>
-                                    <span class="font-bold text-slate-700">${s.name}</span>
-                                </div>
-                                <span class="font-semibold ${state.achievements[s.id] ? 'text-indigo-600' : 'text-slate-400'}">
-                                    ${state.achievements[s.id] ? '已解鎖' : '未解鎖'}
-                                </span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            } else if (type === 'history') {
-                title.innerText = "📅 簽到時光膠囊";
-                body.innerHTML = state.stones.slice().reverse().map(s => `
-                    <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
-                        <div>
-                            <div class="font-bold text-slate-700">${s.date} ${s.time}</div>
-                            <div class="text-slate-500 mt-0.5">${s.note}</div>
-                        </div>
-                        <div class="w-6 h-6 ${s.stone.shape} ${s.stone.isRare ? 'rainbow-stone' : ''}" style="${!s.stone.isRare ? 'background-color:' + s.stone.color : ''}"></div>
-                    </div>
-                `).join('') || '<p class="text-slate-400 text-center py-4">目前還沒有紀錄喔！</p>';
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function showStoneDetail(item) {
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modalTitle');
-            const body = document.getElementById('modalBody');
-
-            title.innerText = `${item.stone.name} (${item.date})`;
-            body.innerHTML = `
-                <div class="text-center py-4 space-y-3">
-                    <div class="w-12 h-12 mx-auto ${item.stone.shape} ${item.stone.isRare ? 'rainbow-stone' : ''}" style="${!item.stone.isRare ? 'background-color:' + item.stone.color : ''}; box-shadow: 0 0 15px ${item.stone.glow}"></div>
-                    <p class="font-bold text-slate-700 text-sm">${item.stone.isRare ? '⭐ 3% 超稀有彩虹奇石' : item.stone.isHoliday ? '🎉 節日限定奇石' : '典藏奇石'}</p>
-                    <p class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-slate-600">${item.note}</p>
-                </div>
-            `;
-            modal.classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
-
-        window.onload = loadData;
-    </script>
+    window.onload = init;
+  </script>
 </body>
 </html>
