@@ -15,7 +15,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   
   <style>
-    /* 掉落動畫 */
     @keyframes dropIn {
       0% { transform: translateY(-180px) scale(0.6) rotate(-10deg); opacity: 0; }
       70% { transform: translateY(10px) scale(1.05) rotate(5deg); opacity: 1; }
@@ -23,7 +22,6 @@
     }
     .animate-drop { animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     
-    /* 搖晃動畫 */
     @keyframes shakeJiggle {
       0% { transform: rotate(0deg) translateX(0); }
       25% { transform: rotate(-4deg) translateX(-3px); }
@@ -33,7 +31,6 @@
     }
     .shake-jar { animation: shakeJiggle 0.5s ease-in-out; }
 
-    /* 彩虹星石頭動畫 */
     .star-stone {
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       background: linear-gradient(45deg, #ff007f, #ff7f00, #ffee00, #00ff7f, #00bfff, #8b00ff);
@@ -46,7 +43,6 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* 🏺 8 款瓶子主題樣式 */
     .jar-classic { border: 4px solid rgba(51, 65, 85, 0.8); background: rgba(255, 255, 255, 0.6); border-radius: 0 0 1.5rem 1.5rem; }
     .jar-chubby { border: 4px solid rgba(71, 85, 105, 0.8); background: rgba(248, 250, 252, 0.7); border-radius: 0 0 3.5rem 3.5rem; }
     .jar-wish { border: 4px solid rgba(180, 83, 9, 0.7); background: rgba(254, 243, 199, 0.4); border-radius: 0 0 1.8rem 1.8rem; }
@@ -63,7 +59,6 @@
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans select-none max-w-md mx-auto relative text-slate-800">
 
-  <!-- 頂部標題與功能導覽列 -->
   <header class="w-full bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 mb-3">
     <div class="flex justify-between items-center mb-2">
       <div>
@@ -78,7 +73,6 @@
       </div>
     </div>
 
-    <!-- 導覽按鈕區 -->
     <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-100 text-xs font-bold">
       <button onclick="openModal('achieve-modal')" class="py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl flex flex-col items-center gap-0.5">
         <span>🏆 圖鑑</span>
@@ -95,12 +89,8 @@
     </div>
   </header>
 
-  <!-- 主內容區塊：簽到罐與任務 -->
   <main class="w-full flex-1 flex flex-col gap-3 mb-3">
-    
-    <!-- 1. 簽到罐區塊 -->
     <div class="flex flex-col items-center gap-2 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm relative">
-      <!-- 瓶子本體 -->
       <div id="jar-container" class="relative w-56 h-56 jar-classic backdrop-blur-md shadow-inner overflow-hidden flex flex-col justify-end p-3 transition-all duration-300">
         <div id="jar-lid" class="absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-3 bg-slate-300 rounded-full border border-slate-400/50 z-20"></div>
         <div id="jar-content" class="w-full h-full flex flex-wrap-reverse content-start justify-center gap-1.5 overflow-y-auto pt-4 no-scrollbar"></div>
@@ -112,7 +102,6 @@
       </div>
     </div>
 
-    <!-- 2. 今日任務清單區塊 -->
     <div class="flex flex-col gap-2 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
       <div class="flex justify-between items-center">
         <h2 class="font-bold text-slate-700 text-xs">📋 今日任務清單</h2>
@@ -131,27 +120,21 @@
         <input type="text" id="daily-note" placeholder="記錄心情或突破..." class="w-full px-3 py-1.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50">
       </div>
     </div>
-
   </main>
 
-  <!-- 底部簽到提交按鈕 -->
   <footer class="w-full">
     <button id="checkin-btn" onclick="doCheckIn()" class="w-full py-3.5 bg-indigo-600 active:bg-indigo-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2">
       <span>🪨 提交今日任務並丟入石頭</span>
     </button>
   </footer>
 
-  <!-- 通用模態彈窗框架 -->
   <div id="modal-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    
-    <!-- 1. 系統提示彈窗 -->
     <div id="system-modal" class="modal-card bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl flex-col gap-3 hidden">
       <h3 id="modal-title" class="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">系統提示</h3>
       <div id="modal-content" class="text-sm text-slate-600 whitespace-pre-line leading-relaxed"></div>
       <button onclick="closeModal('system-modal')" class="w-full mt-2 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl">確定</button>
     </div>
 
-    <!-- 2. 成就與瓶子圖鑑彈窗 -->
     <div id="achieve-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-100 pb-2">
         <h3 class="font-bold text-sm text-slate-800">🏆 成就勳章與瓶子圖鑑</h3>
@@ -160,7 +143,6 @@
       <div id="achieve-list" class="flex flex-col gap-2.5"></div>
     </div>
 
-    <!-- 3. 月曆視角彈窗 -->
     <div id="calendar-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden">
       <div class="flex justify-between items-center border-b border-slate-100 pb-2">
         <h3 class="font-bold text-sm text-slate-800">📅 打卡月曆熱力圖</h3>
@@ -169,7 +151,6 @@
       <div id="calendar-container" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
     </div>
 
-    <!-- 4. 時光膠囊彈窗 -->
     <div id="capsule-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-100 pb-2">
         <h3 class="font-bold text-sm text-slate-800">💊 月度時光膠囊</h3>
@@ -177,13 +158,11 @@
       </div>
       <div id="capsule-content" class="text-xs text-slate-600 flex flex-col gap-2"></div>
     </div>
-
   </div>
 
   <script>
     const COLORS = ['#ffffff', '#cbd5e1', '#64748b', '#f87171', '#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
 
-    // 8 款瓶子與成就定義
     const JARS = [
       { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', unlocked: true },
       { id: 'chubby', name: '🍯 圓滾滾胖胖瓶', class: 'jar-chubby', desc: '【初露鋒芒】累積簽到 7 天解鎖。', achId: 'a7' },
@@ -209,24 +188,42 @@
     };
 
     function init() {
-      const saved = localStorage.getItem('daily_jar_data_v3');
-      if (saved) {
-        state = JSON.parse(saved);
-        const today = new Date().toLocaleDateString();
-        if (state.lastResetDate !== today) {
-          state.customTasks.forEach(t => t.done = false);
-          state.lastResetDate = today;
-          saveData();
+      // 💡 自動搬移舊版本 (v2 或更早) 的紀錄
+      let saved = localStorage.getItem('daily_jar_data_v3');
+      if (!saved) {
+        const oldV2 = localStorage.getItem('daily_jar_data_v2') || localStorage.getItem('daily_jar_data');
+        if (oldV2) {
+          try {
+            const parsedOld = JSON.parse(oldV2);
+            state = { ...state, ...parsedOld };
+            // 保留舊紀錄並升級欄位
+            if (!state.unlockedJars) state.unlockedJars = ['classic'];
+            if (!state.unlockedAchs) state.unlockedAchs = [];
+            if (!state.currentJar) state.currentJar = 'classic';
+            saveData();
+          } catch(e) {}
         }
+      } else {
+        state = JSON.parse(saved);
       }
+
+      const today = new Date().toLocaleDateString();
+      if (state.lastResetDate !== today) {
+        if (state.customTasks) state.customTasks.forEach(t => t.done = false);
+        state.lastResetDate = today;
+        saveData();
+      }
+
       applyJarTheme(state.currentJar || 'classic');
       renderStones();
       renderCustomTasks();
       checkTodayStatus();
       initShakeDetector();
+      
+      // 開啟時順便補算一下舊紀錄是否已符合解鎖條件
+      checkAchievements(new Date().getHours(), true);
     }
 
-    // 📱 手機搖晃感應器
     function initShakeDetector() {
       let lastX, lastY, lastZ;
       let lastTime = 0;
@@ -301,10 +298,9 @@
       }
     }
 
-    // 🏆 成就與瓶子解鎖檢測
-    function checkAchievements(hour) {
+    function checkAchievements(hour, silent = false) {
       const notesCount = state.stones.filter(s => s.note && s.note.length > 0).length;
-      const hasStar = state.stones.some(s => s.isRare);
+      const hasStar = state.stones.some(s => s.isRare || s.shape === 99);
 
       let newlyUnlocked = [];
 
@@ -326,17 +322,9 @@
       if (hour >= 23 || hour < 2) unlock('aNight', 'apothecary');
       if (notesCount >= 30) unlock('aNotes', 'tea');
 
-      // 檢查月度大滿貫
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const monthStones = state.stones.filter(s => {
-        const d = new Date(s.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      });
-      if (monthStones.length >= daysInMonth) unlock('aGrand', 'royal');
+      saveData();
 
-      if (newlyUnlocked.length > 0) {
+      if (!silent && newlyUnlocked.length > 0) {
         setTimeout(() => {
           showSystemModal(`🎉 恭喜解鎖新成就！\n解鎖主題瓶：${newlyUnlocked.join('、')}`);
         }, 800);
@@ -350,11 +338,11 @@
 
       state.stones.forEach((stone, index) => {
         const el = document.createElement('div');
-        if (stone.isRare) {
+        if (stone.isRare || stone.shape === 99) {
           el.className = `stone-item w-8 h-8 star-stone shadow-lg flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
         } else {
           el.className = `stone-item w-8 h-8 rounded-full shadow-md border border-black/10 flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
-          el.style.backgroundColor = stone.color;
+          el.style.backgroundColor = stone.color || '#ffffff';
         }
 
         el.style.transform = `rotate(${stone.rotate || 0}deg)`;
@@ -362,9 +350,9 @@
         el.style.marginRight = `${stone.marginX || 0}px`;
 
         el.onclick = () => {
-          const rare = stone.isRare ? '⭐【超稀有彩虹星】\n\n' : '';
+          const rare = (stone.isRare || stone.shape === 99) ? '⭐【超稀有彩虹星】\n\n' : '';
           const noteText = stone.note ? `\n📝 紀錄：${stone.note}` : '\n📝 紀錄：無';
-          showSystemModal(`${rare}🗓️ 簽到日期：${stone.date}${noteText}`);
+          showSystemModal(`${rare}🗓️ 簽到日期：${stone.date || '早期紀錄'}${noteText}`);
         };
 
         if (animateLast && index === state.stones.length - 1) el.classList.add('animate-drop');
@@ -372,7 +360,6 @@
       });
     }
 
-    // 🔮 隨機抽讀歷史日記
     function randomThrowback() {
       const noteStones = state.stones.filter(s => s.note && s.note.trim() !== "");
       if (noteStones.length === 0) {
@@ -383,7 +370,6 @@
       showSystemModal(`🔮【穿越時光的回憶】\n\n🗓️ 簽到日期：${picked.date}\n✍️ 當時的你寫下了：\n「${picked.note}」`);
     }
 
-    // 📅 渲染月曆
     function renderCalendar() {
       const grid = document.getElementById('calendar-container');
       grid.innerHTML = '';
@@ -400,7 +386,7 @@
 
       for (let day = 1; day <= totalDays; day++) {
         const dateStr = `${year}/${month + 1}/${day}`;
-        const hasCheckIn = state.stones.some(s => new Date(s.date).toLocaleDateString() === new Date(dateStr).toLocaleDateString());
+        const hasCheckIn = state.stones.some(s => s.date && new Date(s.date).toLocaleDateString() === new Date(dateStr).toLocaleDateString());
         grid.innerHTML += `
           <div class="py-2 rounded-lg font-medium ${hasCheckIn ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-slate-50 text-slate-400'}">
             ${day}
@@ -409,7 +395,6 @@
       }
     }
 
-    // 💊 渲染時光膠囊
     function renderCapsule() {
       const container = document.getElementById('capsule-content');
       if (state.stones.length === 0) {
