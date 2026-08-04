@@ -35,7 +35,7 @@
     .stone-item {
       width: 2rem;
       height: 2rem;
-      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; /* 不規則天然鵝卵石曲線 */
+      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
       box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3), 1px 2px 4px rgba(0,0,0,0.2);
       flex-shrink: 0;
       cursor: pointer;
@@ -68,22 +68,6 @@
       100% { background-position: 0% 50%; }
     }
     .stone-tektite { background: radial-gradient(circle at 30% 30%, #818cf8, #090d16); box-shadow: 0 0 6px #6366f1; }
-    .stone-diamond {
-      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-      background: linear-gradient(135deg, #ffffff, #38bdf8);
-      box-shadow: 0 0 8px rgba(255,255,255,0.9);
-    }
-    .stone-gold {
-      clip-path: polygon(30% 0%, 80% 10%, 100% 70%, 60% 100%, 0% 80%);
-      background: linear-gradient(135deg, #fef08a, #ca8a04);
-    }
-    .stone-sakura { background: radial-gradient(circle at 50% 50%, #fbcfe8, #be185d); border: 1px solid #f472b6; }
-    .stone-rhodo {
-      clip-path: polygon(50% 15%, 80% 0%, 100% 20%, 100% 50%, 50% 95%, 0% 50%, 0% 20%, 20% 0%);
-      background: linear-gradient(135deg, #fda4af, #e11d48);
-    }
-    .stone-ice { clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%); background: linear-gradient(135deg, #e0f2fe, #0284c7); }
-    .stone-amber { background: radial-gradient(circle at 30% 30%, #fef08a, #b45309); border-radius: 50%; }
 
     /* 罐子造型 */
     .jar-classic { border: 4px solid rgba(51, 65, 85, 0.8); background: rgba(255, 255, 255, 0.6); border-radius: 0 0 1.5rem 1.5rem; }
@@ -145,6 +129,7 @@
       </div>
     </div>
 
+    <!-- 每日任務清單 (保持公開，不隱藏) -->
     <div class="flex flex-col gap-2 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
       <div class="flex justify-between items-center">
         <h2 class="font-bold text-slate-700 text-xs">📋 今日任務清單</h2>
@@ -178,6 +163,7 @@
       <button onclick="closeModal('system-modal')" class="w-full mt-2 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl">確定</button>
     </div>
 
+    <!-- 成就圖鑑模組（包含特殊隱藏任務成就） -->
     <div id="achieve-modal" class="modal-card bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl flex-col gap-3 hidden max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-100 pb-2">
         <h3 class="font-bold text-sm text-slate-800">🏆 成就勳章與礦石圖鑑</h3>
@@ -218,15 +204,17 @@
       { name: '紅瑪瑙', cssClass: 'stone-agate' }
     ];
 
+    // 成就主題罐 (包含特殊隱藏任務機制 isHidden)
     const JARS = [
-      { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', unlocked: true },
-      { id: 'chubby', name: '🍯 圓滾滾胖胖瓶', class: 'jar-chubby', desc: '【初露鋒芒】累積簽到 7 天解鎖。', achId: 'a7' },
-      { id: 'wish', name: '✨ 復古木塞許願瓶', class: 'jar-wish', desc: '【習慣養成】累積簽到 30 天解鎖。', achId: 'a30' },
-      { id: 'night', name: '🌌 星空夜光玻璃瓶', class: 'jar-night', desc: '【天選之星】獲得 1 顆彩虹蛋白石解鎖。', achId: 'aStar' },
-      { id: 'crystal', name: '💎 典雅八角水晶瓶', class: 'jar-crystal', desc: '【百日築夢】累積簽到 100 天解鎖。', achId: 'a100' },
-      { id: 'apothecary', name: '📜 典藏復古藥劑瓶', class: 'jar-apothecary', desc: '【深夜開罐】深夜 (23:00~02:00) 簽到解鎖。', achId: 'aNight' },
-      { id: 'tea', name: '🍵 陶瓷茶葉罐', class: 'jar-tea', desc: '【真情流露】寫下 30 次筆記解鎖。', achId: 'aNotes' },
-      { id: 'royal', name: '👑 尊爵金邊聖誕瓶', class: 'jar-royal', desc: '【月度大滿貫】單月完全無漏簽解鎖。', achId: 'aGrand' }
+      { id: 'classic', name: '🥛 簡約透明罐', class: 'jar-classic', desc: '預設基本款玻璃瓶。', isHidden: false },
+      { id: 'chubby', name: '🍯 圓滾滾胖胖瓶', class: 'jar-chubby', desc: '累積簽到 7 天解鎖。', isHidden: false },
+      { id: 'wish', name: '✨ 復古木塞許願瓶', class: 'jar-wish', desc: '累積簽到 30 天解鎖。', isHidden: false },
+      { id: 'crystal', name: '💎 典雅八角水晶瓶', class: 'jar-crystal', desc: '累積簽到 100 天解鎖。', isHidden: false },
+      // 特殊隱藏任務 (未解鎖前隱藏條件)
+      { id: 'night', name: '🌌 星空夜光玻璃瓶', class: 'jar-night', desc: '獲得 1 顆彩虹蛋白石解鎖。', isHidden: true },
+      { id: 'apothecary', name: '📜 典藏復古藥劑瓶', class: 'jar-apothecary', desc: '深夜 (23:00~02:00) 簽到解鎖。', isHidden: true },
+      { id: 'tea', name: '🍵 陶瓷茶葉罐', class: 'jar-tea', desc: '寫下 30 次心情筆記解鎖。', isHidden: true },
+      { id: 'royal', name: '👑 尊爵金邊聖誕瓶', class: 'jar-royal', desc: '單月完全無漏簽解鎖。', isHidden: true }
     ];
 
     let state = {
@@ -245,6 +233,21 @@
       let saved = localStorage.getItem('daily_jar_data_v3');
       if (saved) {
         try { state = JSON.parse(saved); } catch(e){}
+      }
+
+      // === 修復機制：為舊版本沒有名稱/樣式的石頭進行 Data Migration ===
+      if (state.stones && state.stones.length > 0) {
+        let needsSave = false;
+        state.stones.forEach(stone => {
+          if (!stone.cssClass || stone.cssClass === 'stone-pebble') {
+            // 自動修復：賦予多樣化隨機礦石，避免全變成鵝卵石
+            const basic = REAL_BASIC_STONES[Math.floor(Math.random() * REAL_BASIC_STONES.length)];
+            stone.name = stone.name && stone.name !== '礦石' ? stone.name : basic.name;
+            stone.cssClass = basic.cssClass;
+            needsSave = true;
+          }
+        });
+        if (needsSave) saveData();
       }
 
       const today = new Date().toLocaleDateString();
@@ -312,11 +315,13 @@
       // 計算獲得哪種現實礦石
       let pickedStone = {};
       const isRareOpal = Math.random() < 0.03; // 3% 幸運彩虹蛋白石
+      const isLateNight = (nowHour >= 23 || nowHour < 2);
+      const isNightTektiteChance = isLateNight && (Math.random() < 0.5); // 深夜改為「50% 機率」獲得隕石
 
-      if (nowHour >= 23 || nowHour < 2) {
-        pickedStone = { name: '🌌 深夜黑玻璃隕石', cssClass: 'stone-tektite', isRare: true };
-      } else if (isRareOpal) {
+      if (isRareOpal) {
         pickedStone = { name: '🌈 彩虹蛋白石', cssClass: 'stone-opal', isRare: true };
+      } else if (isNightTektiteChance) {
+        pickedStone = { name: '🌌 深夜黑玻璃隕石', cssClass: 'stone-tektite', isRare: true };
       } else {
         const basic = REAL_BASIC_STONES[Math.floor(Math.random() * REAL_BASIC_STONES.length)];
         pickedStone = { name: basic.name, cssClass: basic.cssClass, isRare: false };
@@ -350,7 +355,8 @@
 
     function checkAchievements(hour, silent = false) {
       const notesCount = state.stones.filter(s => s.note && s.note.length > 0).length;
-      const hasStar = state.stones.some(s => s.isRare || s.cssClass === 'stone-opal');
+      const hasStar = state.stones.some(s => s.cssClass === 'stone-opal');
+      const hasTektite = state.stones.some(s => s.cssClass === 'stone-tektite');
 
       let newlyUnlocked = [];
 
@@ -369,14 +375,14 @@
       if (state.count >= 30) unlock('a30', 'wish');
       if (state.count >= 100) unlock('a100', 'crystal');
       if (hasStar) unlock('aStar', 'night');
-      if (hour >= 23 || hour < 2) unlock('aNight', 'apothecary');
+      if (hasTektite || (hour >= 23 || hour < 2)) unlock('aNight', 'apothecary');
       if (notesCount >= 30) unlock('aNotes', 'tea');
 
       saveData();
 
       if (!silent && newlyUnlocked.length > 0) {
         setTimeout(() => {
-          showSystemModal(`🎉 恭喜解鎖新成就！\n解鎖主題瓶：${newlyUnlocked.join('、')}`);
+          showSystemModal(`🎉 恭喜觸發隱藏條件，解鎖新成就主題瓶：\n${newlyUnlocked.join('、')}`);
         }, 800);
       }
     }
@@ -470,17 +476,23 @@
       `;
     }
 
+    // 渲染成就圖鑑：包含隱藏特殊任務判斷
     function renderAchievements() {
       const list = document.getElementById('achieve-list');
       list.innerHTML = '';
       JARS.forEach(j => {
         const isUnlocked = state.unlockedJars.includes(j.id);
         const isCurrent = state.currentJar === j.id;
+
+        // 特殊任務隱藏邏輯：若為隱藏任務且未解鎖，顯示為神秘狀態
+        const displayName = (j.isHidden && !isUnlocked) ? '❓❓❓ 隱藏主題' : j.name;
+        const displayDesc = (j.isHidden && !isUnlocked) ? '🔒 達成特定隱藏條件後解鎖...' : j.desc;
+
         list.innerHTML += `
           <div class="p-3 rounded-xl border ${isUnlocked ? 'bg-white border-indigo-200' : 'bg-slate-50 border-slate-200 opacity-60'} flex justify-between items-center">
             <div>
-              <div class="font-bold text-xs ${isUnlocked ? 'text-indigo-900' : 'text-slate-500'}">${j.name} ${isUnlocked ? '✅' : '🔒'}</div>
-              <div class="text-[10px] text-slate-400">${j.desc}</div>
+              <div class="font-bold text-xs ${isUnlocked ? 'text-indigo-900' : 'text-slate-500'}">${displayName} ${isUnlocked ? '✅' : '🔒'}</div>
+              <div class="text-[10px] text-slate-400">${displayDesc}</div>
             </div>
             ${isUnlocked ? `
               <button onclick="applyJarTheme('${j.id}'); closeModal('achieve-modal');" class="px-2.5 py-1 text-xs rounded-lg font-bold ${isCurrent ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white'}">
