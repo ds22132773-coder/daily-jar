@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>習慣養成：石頭圖鑑與成就系統</title>
+  <title>習慣養成：任務打卡與石頭圖鑑系統</title>
   <style>
     :root {
       --bg-color: #f4f1ea;
       --card-bg: #ffffff;
       --primary-color: #4a5568;
       --accent-color: #e2e8f0;
+      --text-color: #2d3748;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-color);
-      color: #2d3748;
+      color: var(--text-color);
       margin: 0;
       padding: 20px;
       display: flex;
@@ -23,18 +24,16 @@
       align-items: center;
     }
 
-    h1 {
-      font-size: 1.5rem;
+    h1, h2, h3 {
       color: var(--primary-color);
-      margin-bottom: 20px;
+      margin-top: 0;
     }
 
     .container {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
-      justify-content: center;
-      max-width: 900px;
+      max-width: 1000px;
       width: 100%;
     }
 
@@ -43,46 +42,55 @@
       border-radius: 16px;
       padding: 20px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      flex: 1;
-      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 瓶子區域 */
+    .jar-wrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    /* 瓶子視覺區域 */
     .jar-container {
-      width: 180px;
-      height: 240px;
+      width: 200px;
+      height: 260px;
       border: 4px solid #a0aec0;
-      border-radius: 20px 20px 40px 40px;
+      border-radius: 20px 20px 45px 45px;
       position: relative;
-      background: rgba(255, 255, 255, 0.6);
-      overflow: hidden;
+      background: rgba(255, 255, 255, 0.7);
+      overflow-y: auto;
       display: flex;
       flex-wrap: wrap-reverse;
       align-content: flex-start;
       padding: 10px;
       gap: 6px;
       margin: 15px 0;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
     }
 
     .jar-lid {
-      width: 120px;
-      height: 16px;
+      width: 130px;
+      height: 18px;
       background: #718096;
-      border-radius: 8px;
+      border-radius: 9px;
       margin-bottom: -6px;
       z-index: 2;
     }
 
     .stone-item {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      display: inline-block;
-      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.2), 1px 1px 3px rgba(0,0,0,0.1);
-      animation: dropIn 0.4s ease-out;
+      cursor: pointer;
+      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.25), 1px 1px 3px rgba(0,0,0,0.15);
+      transition: transform 0.2s;
+      animation: dropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .stone-item:hover {
+      transform: scale(1.2);
     }
 
     @keyframes dropIn {
@@ -90,38 +98,70 @@
       100% { transform: translateY(0) scale(1); opacity: 1; }
     }
 
+    /* 任務清單區域 */
+    .task-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+
     button {
-      background-color: #4a5568;
+      background-color: var(--primary-color);
       color: white;
       border: none;
-      padding: 12px 24px;
-      border-radius: 24px;
-      font-size: 1rem;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.95rem;
       cursor: pointer;
       transition: background 0.2s, transform 0.1s;
-      margin-top: 10px;
+      white-space: nowrap;
     }
 
     button:hover { background-color: #2d3748; }
     button:active { transform: scale(0.98); }
 
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
     /* 圖鑑區塊 */
     .dex-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 10px;
-      width: 100%;
       margin-top: 10px;
     }
 
     .dex-card {
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: 10px;
+      padding: 8px;
       text-align: center;
       background: #f8fafc;
-      font-size: 0.85rem;
-      opacity: 0.4;
+      font-size: 0.8rem;
+      opacity: 0.35;
       filter: grayscale(100%);
       transition: all 0.3s;
     }
@@ -134,10 +174,10 @@
     }
 
     .dex-stone-preview {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      margin: 0 auto 6px auto;
+      margin: 0 auto 4px auto;
     }
 
     /* 彈窗Modal */
@@ -151,6 +191,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s;
+      z-index: 100;
     }
 
     .modal-overlay.active {
@@ -161,49 +202,84 @@
     .modal {
       background: white;
       padding: 24px;
-      border-radius: 20px;
-      max-width: 320px;
+      border-radius: 16px;
+      max-width: 360px;
       width: 90%;
       text-align: center;
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
 
     .modal-stone {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      margin: 15px auto;
+      margin: 12px auto;
     }
   </style>
 </head>
 <body>
 
-  <h1>🪨 每日習慣：石頭圖鑑與收集</h1>
+  <h1>🪨 習慣養成與石頭收集系統</h1>
 
   <div class="container">
-    <!-- 打卡與瓶子區 -->
+    
+    <!-- 左側：每日任務區 -->
     <div class="card">
+      <h2>📋 每日打卡任務</h2>
+      <div class="task-input-group">
+        <input type="text" id="newTaskInput" placeholder="新增習慣任務 (例如：閱讀20分鐘)">
+        <button onclick="addTask()">新增</button>
+      </div>
+      <ul class="task-list" id="taskList"></ul>
+    </div>
+
+    <!-- 中間：瓶子與累積區 -->
+    <div class="card jar-wrapper">
+      <h2>🏺 石頭收集瓶</h2>
       <div class="jar-lid"></div>
       <div class="jar-container" id="jar"></div>
       <p>已累積石頭：<b id="stoneCount">0</b> 顆</p>
-      <button onclick="checkIn()">完成今日記錄（抽石頭）</button>
     </div>
 
-    <!-- 圖鑑區 -->
-    <div class="card">
-      <h3>📖 初階石頭圖鑑 (<span id="unlockedCount">0</span>/10)</h3>
+    <!-- 右側/下方：圖鑑區 -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <h3>📖 石頭圖鑑 (<span id="unlockedCount">0</span>/10)</h3>
       <div class="dex-grid" id="dexGrid"></div>
+    </div>
+
+  </div>
+
+  <!-- 完成任務紀錄 Modal -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal">
+      <h3>🎉 完成任務！</h3>
+      <p id="taskModalName" style="font-weight: bold; color: #4a5568;"></p>
+      <p>寫下今天的簡短心得或筆記：</p>
+      <textarea id="taskNoteInput" rows="3" placeholder="例如：今天讀到了很棒的概念..."></textarea>
+      <br><br>
+      <button onclick="confirmTaskCompletion()">丟入石頭並記錄</button>
     </div>
   </div>
 
-  <!-- 解鎖新石頭彈窗 -->
-  <div class="modal-overlay" id="modalOverlay">
+  <!-- 解鎖新石頭故事 Modal -->
+  <div class="modal-overlay" id="unlockModal">
     <div class="modal">
-      <h2 id="modalTitle">🆕 解鎖新石頭！</h2>
-      <div class="modal-stone" id="modalStone"></div>
-      <h3 id="modalStoneName"></h3>
-      <p id="modalStory" style="font-size: 0.9rem; color: #4a5568; line-height: 1.4;"></p>
-      <button onclick="closeModal()">收進瓶子裡</button>
+      <h2>🆕 解鎖新石頭圖鑑！</h2>
+      <div class="modal-stone" id="unlockStone"></div>
+      <h3 id="unlockStoneName"></h3>
+      <p id="unlockStory" style="font-size: 0.9rem; color: #4a5568; line-height: 1.5; text-align: left; background: #f8fafc; padding: 10px; border-radius: 8px;"></p>
+      <button onclick="closeModal('unlockModal')">收進瓶子裡</button>
+    </div>
+  </div>
+
+  <!-- 石頭詳細筆記 Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal">
+      <div class="modal-stone" id="detailStone"></div>
+      <h3 id="detailStoneName"></h3>
+      <p style="font-size: 0.8rem; color: #718096;" id="detailDate"></p>
+      <p id="detailNote" style="font-size: 0.95rem; color: #2d3748; background: #f4f1ea; padding: 12px; border-radius: 8px; text-align: left;"></p>
+      <button onclick="closeModal('detailModal')">關閉</button>
     </div>
   </div>
 
@@ -222,34 +298,134 @@
       { id: 'quartz', name: '石英晶簇', color: '#ffffff', symbol: '清晰思緒', story: '【純粹的幾何】高溫高壓下緩慢生長出的完美晶體，象徵你在每天的記錄中理清的條理與思緒。' }
     ];
 
-    // 玩家進度資料
-    let userStats = {
-      inventory: [], // 獲得的石頭歷史
-      unlocked: {}   // 解鎖狀況 { pebble: 數量, basalt: 數量 }
-    };
+    // 初始化本地儲存
+    let tasks = JSON.parse(localStorage.getItem('habit_tasks')) || ["每日閱讀 20 分鐘", "壺鈴鍛鍊", "反思筆記"];
+    let historyRecords = JSON.parse(localStorage.getItem('stone_history')) || [];
+    let unlockedDex = JSON.parse(localStorage.getItem('unlocked_dex')) || {};
 
-    // 初始化頁面
+    let currentPendingTaskIndex = null;
+
     function init() {
+      renderTasks();
+      renderJar();
       renderDex();
     }
 
-    // 渲染圖鑑介面
+    // 保存至 LocalStorage
+    function saveData() {
+      localStorage.setItem('habit_tasks', JSON.stringify(tasks));
+      localStorage.setItem('stone_history', JSON.stringify(historyRecords));
+      localStorage.setItem('unlocked_dex', JSON.stringify(unlockedDex));
+    }
+
+    // 渲染任務
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+        li.innerHTML = `
+          <span>${task}</span>
+          <div>
+            <button onclick="openTaskModal(${index})">打卡</button>
+            <button onclick="deleteTask(${index})" style="background:#e53e3e; margin-left:5px;">刪除</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function addTask() {
+      const input = document.getElementById('newTaskInput');
+      if (input.value.trim()) {
+        tasks.push(input.value.trim());
+        input.value = '';
+        saveData();
+        renderTasks();
+      }
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      saveData();
+      renderTasks();
+    }
+
+    // 打卡彈窗
+    function openTaskModal(index) {
+      currentPendingTaskIndex = index;
+      document.getElementById('taskModalName').innerText = tasks[index];
+      document.getElementById('taskNoteInput').value = '';
+      document.getElementById('taskModal').classList.add('active');
+    }
+
+    // 確認完成任務
+    function confirmTaskCompletion() {
+      const note = document.getElementById('taskNoteInput').value.trim();
+      const taskName = tasks[currentPendingTaskIndex];
+      closeModal('taskModal');
+
+      // 隨機抽石頭
+      const drawnStone = STONES_DB[Math.floor(Math.random() * STONES_DB.length)];
+      const isFirstTime = !unlockedDex[drawnStone.id];
+
+      // 更新資料
+      unlockedDex[drawnStone.id] = (unlockedDex[drawnStone.id] || 0) + 1;
+      const record = {
+        stoneId: drawnStone.id,
+        stoneName: drawnStone.name,
+        color: drawnStone.color,
+        task: taskName,
+        note: note || "完成了這項習慣打卡！",
+        date: new Date().toLocaleString('zh-TW', { dateStyle: 'short', timeStyle: 'short' })
+      };
+
+      historyRecords.push(record);
+      saveData();
+
+      // 渲染畫面
+      renderJar();
+      renderDex();
+
+      // 首次獲得新石頭顯示故事 Modal
+      if (isFirstTime) {
+        showUnlockModal(drawnStone);
+      }
+    }
+
+    // 渲染瓶子裡的石頭
+    function renderJar() {
+      const jar = document.getElementById('jar');
+      jar.innerHTML = '';
+      historyRecords.forEach((item, index) => {
+        const stoneEl = document.createElement('div');
+        stoneEl.className = 'stone-item';
+        stoneEl.style.backgroundColor = item.color;
+        stoneEl.title = `${item.task} (${item.date})`;
+        stoneEl.onclick = () => showDetailModal(index);
+        jar.appendChild(stoneEl);
+      });
+      document.getElementById('stoneCount').innerText = historyRecords.length;
+    }
+
+    // 渲染圖鑑
     function renderDex() {
       const dexGrid = document.getElementById('dexGrid');
       dexGrid.innerHTML = '';
       let unlockedCount = 0;
 
       STONES_DB.forEach(stone => {
-        const count = userStats.unlocked[stone.id] || 0;
+        const count = unlockedDex[stone.id] || 0;
         const isUnlocked = count > 0;
         if (isUnlocked) unlockedCount++;
 
         const card = document.createElement('div');
         card.className = `dex-card ${isUnlocked ? 'unlocked' : ''}`;
         card.innerHTML = `
-          <div class="dex-stone-preview" style="background-color: ${stone.color}; border: 1px solid #ccc;"></div>
+          <div class="dex-stone-preview" style="background-color: ${stone.color}; border: 1px solid #cbd5e0;"></div>
           <div><b>${stone.name}</b></div>
-          <div style="font-size:0.75rem; color:#718096;">${isUnlocked ? `擁有: ${count}` : '未解鎖'}</div>
+          <div style="font-size:0.75rem; color:#718096;">${isUnlocked ? `累計: ${count}` : '未解鎖'}</div>
         `;
         dexGrid.appendChild(card);
       });
@@ -257,70 +433,35 @@
       document.getElementById('unlockedCount').innerText = unlockedCount;
     }
 
-    // 打卡邏輯：隨機抽卡
-    function checkIn() {
-      // 隨機抽取一款石頭
-      const randomIndex = Math.floor(Math.random() * STONES_DB.length);
-      const drawnStone = STONES_DB[randomIndex];
-
-      const isFirstTime = !userStats.unlocked[drawnStone.id];
-      userStats.unlocked[drawnStone.id] = (userStats.unlocked[drawnStone.id] || 0) + 1;
-      userStats.inventory.push(drawnStone);
-
-      // 時間判定（彩蛋）
-      checkHiddenAchievements();
-
-      // 畫面視覺更新
-      addStoneToJar(drawnStone.color);
-      renderDex();
-
-      // 如果是第一次獲得，跳出圖鑑解鎖卡片
-      if (isFirstTime) {
-        showModal("🆕 解鎖新石頭圖鑑！", drawnStone);
-      }
+    // 顯示圖鑑解鎖彈窗
+    function showUnlockModal(stone) {
+      document.getElementById('unlockStoneName').innerText = `${stone.name} (${stone.symbol})`;
+      document.getElementById('unlockStory').innerText = stone.story;
+      const stoneEl = document.getElementById('unlockStone');
+      stoneEl.style.backgroundColor = stone.color;
+      stoneEl.style.border = '2px solid #cbd5e0';
+      document.getElementById('unlockModal').classList.add('active');
     }
 
-    // 石頭落入瓶子視覺
-    function addStoneToJar(color) {
-      const jar = document.getElementById('jar');
-      const stoneEl = document.createElement('div');
-      stoneEl.className = 'stone-item';
-      stoneEl.style.backgroundColor = color;
-      jar.appendChild(stoneEl);
-
-      document.getElementById('stoneCount').innerText = userStats.inventory.length;
-    }
-
-    // 隱藏成就檢查（彩蛋）
-    function checkHiddenAchievements() {
-      const now = new Date();
-      const hour = now.getHours();
-
-      if (hour >= 1 && hour < 4) {
-        console.log("🌙 觸發隱藏成就：夜貓子！");
-      } else if (hour >= 5 && hour < 7) {
-        console.log("🌅 觸發隱藏成就：晨型人！");
-      }
-    }
-
-    // 顯示解鎖 Modal
-    function showModal(title, stone) {
-      document.getElementById('modalTitle').innerText = title;
-      document.getElementById('modalStoneName').innerText = `${stone.name} (${stone.symbol})`;
-      document.getElementById('modalStory').innerText = stone.story;
+    // 點擊石頭查看詳細筆記
+    function showDetailModal(index) {
+      const item = historyRecords[index];
+      document.getElementById('detailStoneName').innerText = `${item.task} · ${item.stoneName}`;
+      document.getElementById('detailDate').innerText = `記錄時間：${item.date}`;
+      document.getElementById('detailNote').innerText = item.note;
       
-      const modalStone = document.getElementById('modalStone');
-      modalStone.style.backgroundColor = stone.color;
-      modalStone.style.border = '2px solid #cbd5e0';
+      const stoneEl = document.getElementById('detailStone');
+      stoneEl.style.backgroundColor = item.color;
+      stoneEl.style.border = '2px solid #cbd5e0';
 
-      document.getElementById('modalOverlay').classList.add('active');
+      document.getElementById('detailModal').classList.add('active');
     }
 
-    function closeModal() {
-      document.getElementById('modalOverlay').classList.remove('active');
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
     }
 
-    // 啟動頁面
+    // 啟動
     init();
   </script>
 </body>
