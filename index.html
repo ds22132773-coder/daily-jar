@@ -36,11 +36,13 @@
 .stone-shape-6 { width: 33px; height: 31px; border-radius: 52% 48% 58% 42% / 45% 55% 45% 55%; }
 .stone-shape-7 { width: 29px; height: 33px; border-radius: 45% 55% 52% 48% / 58% 42% 55% 45%; }
 
-/* 大幅調整：與其他石頭大小一致，並將所有尖角透過極大比例的圓角與外擴變成溫潤胖胖的「星星糖／流星塊」造型 */
+/* 調整後的星星造型：大小與其他石頭相近（約 32x32px），並採用類似參考圖的溫潤圓弧角星星剪影與立體陰影 */
 .stone-shape-star {
-  width: 33px; height: 31px;
-  border-radius: 50% 50% 45% 45% / 45% 45% 50% 50% !important;
-  box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.6), inset 0 -3px 6px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0,0,0,0.15) !important;
+  width: 32px; height: 32px;
+  background-color: #f59e0b;
+  clip-path: polygon(50% 2%, 63% 35%, 98% 38%, 71% 62%, 79% 95%, 50% 78%, 21% 95%, 29% 62%, 2% 38%, 37% 35%);
+  border-radius: 35%;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0,0,0,0.15) !important;
 }
 
 /* 3% 稀有彩虹流光效果 */
@@ -398,8 +400,10 @@ if (stDef.color === 'rainbow') {
 el.className = `stone-item ${shapeClass} rainbow-glow shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-125 z-10`;
 } else {
 el.className = `stone-item ${shapeClass} shadow-md flex-shrink-0 cursor-pointer transition-transform hover:scale-110`;
+if (stone.stoneId !== 'rainbow_star') {
 el.style.backgroundColor = stDef.color;
 el.style.boxShadow = 'inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)';
+}
 }
 el.style.transform = `rotate(${stone.rotate || 0}deg)`;
 el.style.marginLeft = `${stone.marginX || 0}px`;
@@ -431,6 +435,7 @@ card.className = "p-3 rounded-xl border flex gap-3 items-center bg-white border-
 let iconStyle = '';
 let wikiShapeClass = (st.id === 'rainbow_star') ? 'stone-shape-star rainbow-glow' : 'stone-shape-1';
 if (st.color === 'rainbow') iconStyle = '';
+else if (st.id === 'rainbow_star') iconStyle = '';
 else iconStyle = `background-color: ${st.color}; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.2);`;
 card.innerHTML = `<div class="${wikiShapeClass} flex-shrink-0 shadow-sm" style="${iconStyle}"></div> <div class="flex-1"> <div class="flex justify-between items-center"> <h4 class="font-bold text-xs text-slate-800"> ${st.name} (擁有 <span class="text-indigo-600 font-black">${count}</span> 顆) </h4> </div> <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">${st.desc}</p> </div>`;
 container.appendChild(card);
